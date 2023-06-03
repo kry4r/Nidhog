@@ -1,0 +1,6 @@
+#忽略
+.vs/
+.idea/
+NidhogEditor/bin/
+x64/
+NidhogEditor/obj/
