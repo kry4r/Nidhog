@@ -28,7 +28,7 @@ namespace NidhogEditor.Components
 
         private Vector3 _rotation;
         [DataMember]
-        public Vector3 Roatation
+        public Vector3 Rotation
         {
             get => _rotation;
             set
@@ -36,7 +36,7 @@ namespace NidhogEditor.Components
                 if (_rotation != value)
                 {
                     _rotation = value;
-                    OnPropertyChanged(nameof(Roatation));
+                    OnPropertyChanged(nameof(Rotation));
                 }
             }
         }

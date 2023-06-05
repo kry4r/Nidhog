@@ -94,6 +94,7 @@
     <Compile Include="Dictionaries\ControlTemplates.xaml.cs">
       <DependentUpon>ControlTemplates.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DllWrapper\EngineAPI.cs" />
     <Compile Include="Editors\WorldEditor\GameEntityView.xaml.cs">
       <DependentUpon>GameEntityView.xaml</DependentUpon>
     </Compile>
@@ -117,6 +118,10 @@
     </Compile>
     <Compile Include="Utilities\Utilities.cs" />
     <Page Include="Dictionaries\ControlTemplates.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dictionaries\EditorColors.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

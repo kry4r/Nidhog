@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Media.Animation;
 
 namespace NidhogEditor.GameProject
 {
@@ -19,6 +20,32 @@ namespace NidhogEditor.GameProject
     /// </summary>
     public partial class ProjectBrowsweDialg : Window
     {
+        private readonly CubicEase _easing = new CubicEase() { EasingMode = EasingMode.EaseInOut };
+        private void AnimateToCreateProject()
+        {
+            var highlightAnimation = new DoubleAnimation(200, 400, new Duration(TimeSpan.FromSeconds(0.2)));
+            highlightAnimation.EasingFunction = _easing;
+            highlightAnimation.Completed += (s, e) =>
+            {
+                var animation = new ThicknessAnimation(new Thickness(0), new Thickness(-1600, 0, 0, 0), new Duration(TimeSpan.FromSeconds(0.5)));
+                animation.EasingFunction = _easing;
+                browserContent.BeginAnimation(MarginProperty, animation);
+            };
+            highlightRect.BeginAnimation(Canvas.LeftProperty, highlightAnimation);
+        }
+
+        private void AnimateToOpenProject()
+        {
+            var highlightAnimation = new DoubleAnimation(400, 200, new Duration(TimeSpan.FromSeconds(0.2)));
+            highlightAnimation.EasingFunction = _easing;
+            highlightAnimation.Completed += (s, e) =>
+            {
+                var animation = new ThicknessAnimation(new Thickness(-1600, 0, 0, 0), new Thickness(0), new Duration(TimeSpan.FromSeconds(0.5)));
+                animation.EasingFunction = _easing;
+                browserContent.BeginAnimation(MarginProperty, animation);
+            };
+            highlightRect.BeginAnimation(Canvas.LeftProperty, highlightAnimation);
+        }
         public ProjectBrowsweDialg()
         {
             InitializeComponent();
@@ -30,31 +57,35 @@ namespace NidhogEditor.GameProject
             Loaded -= OnProjectBrowsweDialogLoaded;
             if (!OpenProject.Projects.Any())
             {
-                OpenProjectButton.IsEnabled = false;
+                openProjectButton.IsEnabled = false;
                 openProjectView.Visibility = Visibility.Hidden;
-                OnToggleButton_Click(CreatProjectButton, new RoutedEventArgs());
+                OnToggleButton_Click(createProjectButton, new RoutedEventArgs());
             }
         }
 
         private void OnToggleButton_Click(object sender,RoutedEventArgs e)
         {
-            if(sender == OpenProjectButton)
+            if(sender == openProjectButton)
             {
-                if(CreatProjectButton.IsChecked == true)
+                if(createProjectButton.IsChecked == true)
                 {
-                    CreatProjectButton.IsChecked = false;
-                    BrowswerContent.Margin = new Thickness(0);
+                    createProjectButton.IsChecked = false;
+                    AnimateToOpenProject();
+                    openProjectView.IsEnabled = true;
+                    newProjectView.IsEnabled = false;
                 }
-                OpenProjectButton.IsChecked = true;
+                openProjectButton.IsChecked = true;
             }
             else
             {
-                if (OpenProjectButton.IsChecked == true)
+                if (openProjectButton.IsChecked == true)
                 {
-                    OpenProjectButton.IsChecked = false;
-                    BrowswerContent.Margin = new Thickness(-800,0,0,0);
+                    openProjectButton.IsChecked = false;
+                    AnimateToCreateProject();
+                    openProjectView.IsEnabled = false;
+                    newProjectView.IsEnabled = true;
                 }
-                CreatProjectButton.IsChecked = true;
+                createProjectButton.IsChecked = true;
             }
         }
     }

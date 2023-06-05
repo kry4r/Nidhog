@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:NidhogEditor"
         xmlns:editors="clr-namespace:NidhogEditor.Editors"
         mc:Ignorable="d" WindowStartupLocation="CenterScreen"
-        Title="NidhogEditor" Height="1080" Width="1920">
+        Title="NidhogEditor" Height="1080" Width="1920"
+        Style="{StaticResource NidhogWindowStyle}">
     <Grid>
         <editors:WorldEditorView/>
     </Grid>
