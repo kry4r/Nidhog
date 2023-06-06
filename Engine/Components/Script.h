@@ -1,14 +1,13 @@
 #pragma once
 #include"ComponentsCommon.h"
 
-namespace nidhog::transform {
+namespace nidhog::script {
 
 
     struct init_info
     {
-        f32 position[3]{};//位置
-        f32 rotation[4]{};//旋转
-        f32 scale[3]{ 1.f, 1.f, 1.f };//缩放
+        //指向脚本的创建函数指针
+        detail::script_creator script_creator;
     };
     //创建entity的Tansform
     component create(init_info info, game_entity::entity entity);

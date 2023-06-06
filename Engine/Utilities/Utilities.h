@@ -9,6 +9,20 @@
 namespace nidhog::utl {
 	template<typename T>
 	using vector = std::vector<T>;
+	//交换一个元素与末尾元素，之后删除处于末尾的元素
+	template<typename T>
+	void erase_unordered(std::vector<T>& v, size_t index)
+	{
+		if(v.size() > 1)
+		{ 
+			std::iter_swap(v.begin() + index, v.end() - 1);
+			v.pop_back();
+		}
+		else
+		{
+			v.clear();
+		}
+	}
 }
 #endif
 

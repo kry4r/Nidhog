@@ -12,7 +12,7 @@ namespace nidhog::transform
     } // ÄäÃûµÄnamespace
 
     component
-        create_transform(const init_info& info, game_entity::entity entity)
+        create(init_info info, game_entity::entity entity)
     {
         assert(entity.is_valid());
         const id::id_type entity_index{ id::index(entity.get_id()) };
@@ -36,7 +36,7 @@ namespace nidhog::transform
     }
 
     void
-        remove_transform(component c)
+        remove(component c)
     {
         assert(c.is_valid());
     }
