@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.IO;
 
 namespace NidhogEditor
 {
@@ -22,6 +23,7 @@ namespace NidhogEditor
     /// </summary>
     public partial class MainWindow : Window
     {
+        public static string NidhogPath { get; private set; } = @"D:\Nidhog";
         public MainWindow()
         {
             InitializeComponent();
@@ -38,8 +40,33 @@ namespace NidhogEditor
         private void OnMainwindowLoaded(object sender,RoutedEventArgs e)
         {
             Loaded -= OnMainwindowLoaded;
+            GetEnginePath();
             OpenProjectBrowserDialog();
         }
+
+        
+        private void GetEnginePath()
+        {
+            var nidhogPath = Environment.GetEnvironmentVariable("NIDHOG_ENGINE", EnvironmentVariableTarget.User);
+            if (nidhogPath == null || !Directory.Exists(System.IO.Path.Combine(nidhogPath, @"Engine\EngineAPI")))
+            {
+                var dlg = new EnginePathDialog();
+                if (dlg.ShowDialog() == true)
+                {
+                    NidhogPath = dlg.NidhogPath;
+                    Environment.SetEnvironmentVariable("PRIMAL_ENGINE", NidhogPath.ToUpper(), EnvironmentVariableTarget.User);
+                }
+                else
+                {
+                    Application.Current.Shutdown();
+                }
+            }
+            else
+            {
+                NidhogPath = nidhogPath;
+            }
+        }
+        
         private void OpenProjectBrowserDialog()
         {
             var projectBrowser = new ProjectBrowsweDialg();

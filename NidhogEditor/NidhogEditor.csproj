@@ -110,6 +110,9 @@
     <Compile Include="Editors\WorldEditor\WorldEditorView.xaml.cs">
       <DependentUpon>WorldEditorView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="EnginePathDialog.xaml.cs">
+      <DependentUpon>EnginePathDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GameProject\OpenProject.cs" />
     <Compile Include="GameProject\Project.cs" />
     <Compile Include="GameProject\Scene.cs" />
@@ -151,6 +154,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Editors\WorldEditor\WorldEditorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="EnginePathDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -38,6 +38,7 @@ namespace nidhog::game_entity {
             // 重新确定组件大小
             // NOTE: 不调用Resize（），所以内存分配数量始终保持较低
             transforms.emplace_back();
+            scripts.emplace_back();
         }
 
         const entity new_entity{ id };
@@ -62,6 +63,13 @@ namespace nidhog::game_entity {
     {
         const id::id_type index{ id::index(id) };
         assert(is_alive(id));
+        //检查sripts是否存在
+        if (scripts[index].is_valid())
+        {
+            script::remove(scripts[index]);
+            scripts[index] = {};
+        }
+
         transform::remove(transforms[index]);
         transforms[index] = {};
         free_ids.push_back(id);

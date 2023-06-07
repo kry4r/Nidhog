@@ -62,7 +62,7 @@ namespace nidhog
 #define REGISTER_SCRIPT(TYPE)                                           \
         class TYPE;                                                     \
         namespace {                                                     \
-        const u8 _reg##TYPE                                             \
+        const u8 _reg_##TYPE                                            \
         { nidhog::script::detail::register_script(                      \
               nidhog::script::detail::string_hash()(#TYPE),             \
               &nidhog::script::detail::create_script<TYPE>) };          \
