@@ -1,4 +1,5 @@
-﻿using NidhogEditor.GameProject;
+﻿using NidhogEditor.GameDev;
+using NidhogEditor.GameProject;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -32,6 +33,11 @@ namespace NidhogEditor.Editors
         {
             Loaded -= OnWorldEditorViewLoaded;
             Focus();
+        }
+
+        private void OnNewScript_Button_Click(object sender, RoutedEventArgs e)
+        {
+            new NewScriptDialog().ShowDialog();
         }
     }
 }
