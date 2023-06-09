@@ -41,7 +41,7 @@
         </Style>
     </UserControl.Resources>
     <Grid>
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" x:Name="scrollViewer" Background="{StaticResource Editor.Window.GrayBrush2}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" x:Name="scrollViewer" Background="{StaticResource Editor.Window.GrayBrush2}" Margin="0,32,0,0">
             <ItemsControl ItemsSource="{Binding Source={x:Static local:Logger.FilteredMessages}}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -93,7 +93,7 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="4,0" VerticalAlignment="Center">
                 <Button Content="Clear" Margin="1,0" Click="OnClear_ButtonClick" Focusable="False"/>
                 <ToggleButton IsChecked="True" Content="info" Margin="1,0" ToolTip="Toggle information messages"
-                              x:Name="toggleInfo" Background="{StaticResource Editor.GreenBrush}"/>
+                              x:Name="toggleInfo" Background="{StaticResource Editor.BlueBrush}"/>
                 <ToggleButton IsChecked="True" Content="warn" Margin="1,0" ToolTip="Toggle warning messages"
                               x:Name="toggleWarn" Background="{StaticResource Editor.OrangeBrush}"/>
                 <ToggleButton IsChecked="True" Content="error" Margin="1,0" ToolTip="Toggle error messages"

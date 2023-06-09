@@ -35,7 +35,7 @@ namespace NidhogEditor.GameProject
     internal class NewProject : ViewModelBase
     {
         //TODO:更改为你的模板所在地方
-        private readonly string _templatePath = @"..\..\NidhogEditor\ProjectTemplates\";
+        private readonly string _templatePath = @"D:\Nidhog\NidhogEditor\ProjectTemplates\";
         private string _projectname = "NewProject";
 
         public string ProjectName
@@ -73,7 +73,7 @@ namespace NidhogEditor.GameProject
             get => _isValid;
             set
             {
-                if(_isValid != value)
+                if (_isValid != value)
                 {
                     _isValid = value;
                     OnPropertyChanged(nameof(isValid));
@@ -103,7 +103,7 @@ namespace NidhogEditor.GameProject
         private bool ValidateProjectPath()
         {
             var path = ProjectPath;
-            if (path.Substring(path.Length - 1,1) != @"\") path += @"\";
+            if (path.Substring(path.Length - 1, 1) != @"\") path += @"\";
             path += $@"{ProjectName}\";
 
             isValid = false;
@@ -123,7 +123,7 @@ namespace NidhogEditor.GameProject
             {
                 ErrorMsg = "Invalid character used in project path";
             }
-            else if(Directory.Exists(path) && Directory.EnumerateFileSystemEntries(path).Any())
+            else if (Directory.Exists(path) && Directory.EnumerateFileSystemEntries(path).Any())
             {
                 ErrorMsg = "Selcted project folder already exist and is not empty";
             }
@@ -148,7 +148,7 @@ namespace NidhogEditor.GameProject
             try
             {
                 if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-                foreach(var folder in template.Folders)
+                foreach (var folder in template.Folders)
                 {
                     Directory.CreateDirectory(Path.GetFullPath(Path.Combine(Path.GetDirectoryName(path), folder)));
                 }
@@ -199,16 +199,16 @@ namespace NidhogEditor.GameProject
         public NewProject()
         {
             ProjectTemplates = new ReadOnlyObservableCollection<ProjectTemplate>(_projectTemplates);
-       
+
             try
             {
-                var templatesFiles = Directory.GetFiles(_templatePath,"abc.xml",SearchOption.AllDirectories);
+                var templatesFiles = Directory.GetFiles(_templatePath, "abc.xml", SearchOption.AllDirectories);
                 Debug.Assert(templatesFiles.Any());
                 foreach (var file in templatesFiles)
                 {
                     var template = Serializer.FromFile<ProjectTemplate>(file);
                     template.TemplatePath = Path.GetDirectoryName(file);
-                    template.IconFilePath = Path.GetFullPath(Path.Combine(template.TemplatePath,"icon.png"));
+                    template.IconFilePath = Path.GetFullPath(Path.Combine(template.TemplatePath, "icon.png"));
                     template.Icon = File.ReadAllBytes(template.IconFilePath);
                     template.ScreenshotFilePath = Path.GetFullPath(Path.Combine(template.TemplatePath, "ScreenShot.jpg"));
                     template.Screenshot = File.ReadAllBytes(template.ScreenshotFilePath);
@@ -218,7 +218,7 @@ namespace NidhogEditor.GameProject
                 }
                 ValidateProjectPath();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
                 Logger.Log(MessageType.Error, $"Failed to load project templates");

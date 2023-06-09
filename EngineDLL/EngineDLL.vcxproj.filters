@@ -21,5 +21,13 @@
     <ClCompile Include="EngineAPI.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="EntityAPI.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Common.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

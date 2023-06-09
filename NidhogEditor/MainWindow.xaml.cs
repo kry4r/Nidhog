@@ -23,7 +23,7 @@ namespace NidhogEditor
     /// </summary>
     public partial class MainWindow : Window
     {
-        public static string NidhogPath { get; private set; } = @"D:\Nidhog";
+        public static string NidhogPath { get; private set; }
         public MainWindow()
         {
             InitializeComponent();

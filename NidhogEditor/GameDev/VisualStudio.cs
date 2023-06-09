@@ -1,4 +1,5 @@
-﻿using NidhogEditor.Utilities;
+﻿using NidhogEditor.GameProject;
+using NidhogEditor.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,6 +16,10 @@ namespace NidhogEditor.GameDev
     {
         private static EnvDTE80.DTE2 _vsInstance = null;
         private static readonly string _progID = "VisualStudio.DTE.16.0";
+
+        public static bool BuildSucceeded { get; private set; } = true;
+
+        public static bool BuildDone { get; private set; } = true;
 
         [DllImport("ole32.dll")]    //binding context
         private static extern int CreateBindCtx(uint reserved, out IBindCtx ppbc);
@@ -105,6 +110,7 @@ namespace NidhogEditor.GameDev
             _vsInstance?.Quit();
         }
 
+
         public static bool AddFilesToSolution(string solution, string projectName, string[] files)
         {
             Debug.Assert(files?.Length > 0);
@@ -143,6 +149,82 @@ namespace NidhogEditor.GameDev
                 return false;
             }
             return true;
+        }
+        public static void BuildSolution(Project project, string configName, bool showWindow=true)
+        {
+            if (IsDebugging())
+            {
+                Logger.Log(MessageType.Error, "Visual Studio is currenty running a process");
+                return;
+            }
+            OpenVisualStudio(project.Solution);
+            BuildDone = BuildSucceeded = false;
+            for (int i = 0; i < 3; ++i)
+            {
+                try
+                {
+                    if (!_vsInstance.Solution.IsOpen) _vsInstance.Solution.Open(project.Solution);
+                    _vsInstance.MainWindow.Visible = showWindow;
+
+                    _vsInstance.Events.BuildEvents.OnBuildProjConfigBegin += OnBuildSolutionBegin;
+                    _vsInstance.Events.BuildEvents.OnBuildProjConfigDone += OnBuildSolutionDone;
+
+                    try
+                    {
+                        foreach (var pdbFile in Directory.GetFiles(Path.Combine($"{project.Path}", $@"x64\{configName}"), "*.pdb"))
+                        {
+                            File.Delete(pdbFile);
+                        }
+                    }
+                    catch (Exception ex) { Debug.WriteLine(ex.Message); }
+
+                    _vsInstance.Solution.SolutionBuild.SolutionConfigurations.Item(configName).Activate();
+                    _vsInstance.ExecuteCommand("Build.BuildSolution");
+                
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                    Debug.WriteLine($"Attempt {i}: failed to build {project.Name}");
+                    System.Threading.Thread.Sleep(1000);
+                }
+            }
+        }
+
+        private static void OnBuildSolutionDone(string project, string projectConfig, string platform, string solutionConfig, bool success)
+        {
+            if (BuildDone) return;
+
+            if (success) Logger.Log(MessageType.Info, $"Building {projectConfig} configuration succeeded");
+            else Logger.Log(MessageType.Error, $"Building {projectConfig} configuration failed");
+
+            BuildDone = true;
+            BuildSucceeded = success;
+        }
+
+        private static void OnBuildSolutionBegin(string project, string projectConfig, string platform, string solutionConfig)
+        {
+            Logger.Log(MessageType.Info, $"Building {project}, {projectConfig}, {platform}, {solutionConfig}");
+        }
+
+        public static bool IsDebugging()
+        {
+            bool result = false;
+
+            for (int i = 0; i < 3; ++i)
+            {
+                try
+                {
+                    result = _vsInstance != null &&
+                        (_vsInstance.Debugger.CurrentProgram != null || _vsInstance.Debugger.CurrentMode == EnvDTE.dbgDebugMode.dbgRunMode);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                    if (!result) System.Threading.Thread.Sleep(1000);
+                }
+            }
+            return result;
         }
     }
 }

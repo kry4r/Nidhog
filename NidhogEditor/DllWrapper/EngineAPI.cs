@@ -31,29 +31,36 @@ namespace NidhogEditor.DllWrapper
 {
     static class EngineAPI
     {
-        private const string _dllName = "EngineDll.dll";
-        [DllImport(_dllName)]
-        private static extern int CreateGameEntity(GameEntityDescriptor desc);
-        public static int CreateGameEntity(GameEntity entity)
+        private const string _engineDll = "EngineDll.dll";
+        [DllImport(_engineDll, CharSet = CharSet.Ansi)]
+        public static extern int LoadGameCodeDll(string dllPath);
+        [DllImport(_engineDll)]
+        public static extern int UnloadGameCodeDll();
+        internal static class EntityAPI
         {
-            GameEntityDescriptor desc = new GameEntityDescriptor();
-
-            //transform component
+            [DllImport(_engineDll)]
+            private static extern int CreateGameEntity(GameEntityDescriptor desc);
+            public static int CreateGameEntity(GameEntity entity)
             {
-                var c = entity.GetComponent<Transform>();
-                desc.Transform.Position = c.Position;
-                desc.Transform.Rotation = c.Rotation;
-                desc.Transform.Scale = c.Scale;
+                GameEntityDescriptor desc = new GameEntityDescriptor();
+
+                //transform component
+                {
+                    var c = entity.GetComponent<Transform>();
+                    desc.Transform.Position = c.Position;
+                    desc.Transform.Rotation = c.Rotation;
+                    desc.Transform.Scale = c.Scale;
+                }
+
+                return CreateGameEntity(desc);
             }
 
-            return CreateGameEntity(desc);
-        }
-
-        [DllImport(_dllName)]
-        private static extern void RemoveGameEntity(int id);
-        public static void RemoveGameEntity(GameEntity entity)
-        {
-            RemoveGameEntity(entity.EntityId);
+            [DllImport(_engineDll)]
+            private static extern void RemoveGameEntity(int id);
+            public static void RemoveGameEntity(GameEntity entity)
+            {
+                RemoveGameEntity(entity.EntityId);
+            }
         }
     }
 }
