@@ -3,11 +3,13 @@ using NidhogEditor.GameProject;
 using NidhogEditor.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -18,6 +20,18 @@ using System.Windows.Shapes;
 
 namespace NidhogEditor.Editors
 {
+    public class NullableBoolToBoolConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value is bool b && b == true;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value is bool b && b == true;
+        }
+    }
     /// <summary>
     /// GameEntityView.xaml 的交互逻辑
     /// </summary>
@@ -87,6 +101,56 @@ namespace NidhogEditor.Editors
             var redoAction = GetIsEnbaleAction();
             Project.UndoRedo.Add(new UndoRedoAction(undoAction, redoAction,
                 vm.IsEnabled == true ? "Enable game entity" : "Disable game entity"));
+        }
+
+        private void OnAddComponent_Button_PreviewMouse_LBD(object sender, MouseButtonEventArgs e)
+        {
+            var menu = FindResource("addComponentMenu") as ContextMenu;
+            var btn = sender as ToggleButton;
+            btn.IsChecked = true;
+            menu.Placement = PlacementMode.Bottom;
+            menu.PlacementTarget = btn;
+            menu.MinWidth = btn.ActualWidth;
+            menu.IsOpen = true;
+        }
+
+        private void OnAddScriptComponent(object sender, RoutedEventArgs e)
+        {
+            AddComponent(ComponentType.Script, (sender as MenuItem).Header.ToString());
+        }
+
+        private void AddComponent(ComponentType componentType, object data)
+        {
+            var creationFunction = ComponentFactory.GetCreationFunction(componentType);
+            //创建一个list，以便undo redo
+            var chandedEntities = new List<(GameEntity entity, Component component)>();
+            var vm = DataContext as MSEntity;
+            foreach (var entity in vm.SelectedEntities)
+            {
+                var component = creationFunction(entity, data);
+                if (entity.AddComponent(component))
+                {
+                    chandedEntities.Add((entity, component));
+                }
+            }
+
+            if (chandedEntities.Any())
+            {
+                vm.Refresh();
+
+                Project.UndoRedo.Add(new UndoRedoAction(
+                () =>
+                {
+                    chandedEntities.ForEach(x => x.entity.RemoveComponent(x.component));
+                    (DataContext as MSEntity).Refresh();
+                },
+                () =>
+                {
+                    chandedEntities.ForEach(x => x.entity.AddComponent(x.component));
+                    (DataContext as MSEntity).Refresh();
+                },
+                $"Add {componentType} component"));
+            }
         }
     }
 }

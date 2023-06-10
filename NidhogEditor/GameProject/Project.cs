@@ -1,4 +1,5 @@
-﻿using NidhogEditor.DllWrapper;
+﻿using NidhogEditor.Components;
+using NidhogEditor.DllWrapper;
 using NidhogEditor.GameDev;
 using NidhogEditor.Utilities;
 using System;
@@ -54,6 +55,20 @@ namespace NidhogEditor.GameProject
         public BuildConfiguration StandAloneBuildConfig => BuildConfig == 0 ? BuildConfiguration.Debug : BuildConfiguration.Release;
 
         public BuildConfiguration DllBuildConfig => BuildConfig == 0 ? BuildConfiguration.DebugEditor : BuildConfiguration.ReleaseEditor;
+
+        private string[] _availableScripts;
+        public string[] AvailableScripts
+        {
+            get => _availableScripts;
+            set
+            {
+                if (_availableScripts != value)
+                {
+                    _availableScripts = value;
+                    OnPropertyChanged(nameof(AvailableScripts));
+                }
+            }
+        }
 
         [DataMember(Name ="Scenes")]
         private ObservableCollection<Scene> _scenes = new ObservableCollection<Scene>();
@@ -145,6 +160,7 @@ namespace NidhogEditor.GameProject
 
         public void Unload()
         {
+            UnloadGameDll();
             VisualStudio.CloseVisualStudio();
             UndoRedo.Reset();
         }
@@ -176,9 +192,11 @@ namespace NidhogEditor.GameProject
         }
         private void UnloadGameDll()
         {
+            ActiveScene.GameEntities.Where(x => x.GetComponent<Script>() != null).ToList().ForEach(x => x.IsActive = false);
             if (EngineAPI.UnloadGameCodeDll() != 0)
             {
                 Logger.Log(MessageType.Info, "Game code DLL unloaded");
+                AvailableScripts = null;
             }
         }
 
@@ -186,9 +204,12 @@ namespace NidhogEditor.GameProject
         {
             var configName = GetConfigurationName(DllBuildConfig);
             var dll = $@"{Path}x64\{configName}\{Name}.dll";
+            AvailableScripts = null;
             if (File.Exists(dll) && EngineAPI.LoadGameCodeDll(dll) != 0)
             {
                 Logger.Log(MessageType.Info, "Game code DLL loaded successfully.");
+                AvailableScripts = EngineAPI.GetScriptNames();
+                ActiveScene.GameEntities.Where(x => x.GetComponent<Script>() != null).ToList().ForEach(x => x.IsActive = true);
             }
             else
             {
@@ -205,6 +226,7 @@ namespace NidhogEditor.GameProject
                 OnPropertyChanged(nameof(Scenes));
             }
             ActiveScene = Scenes.FirstOrDefault(x => x.IsActive);
+            Debug.Assert(ActiveScene != null);
 
             await BuildGameDll(false);
 

@@ -51,6 +51,11 @@ namespace nidhog
             //注册函数
             u8 register_script(size_t, script_creator);
 
+#ifdef USE_WITH_EDITOR
+            extern "C" __declspec(dllexport)
+#endif //USE_WITH_EDITOR
+            script_creator get_script_creator(size_t tag);
+
             template<class script_class>
             script_ptr create_script(game_entity::entity entity)
             {
@@ -58,15 +63,29 @@ namespace nidhog
                 //创建一个脚本实例并返回一个指向脚本的指针
                 return std::make_unique<script_class>(entity);
             }
-//用来自动帮我们填充register信息的宏
+#ifdef USE_WITH_EDITOR
+            u8 add_script_name(const char* name);
+            //用来自动帮我们填充register信息的宏
 #define REGISTER_SCRIPT(TYPE)                                           \
-        class TYPE;                                                     \
         namespace {                                                     \
         const u8 _reg_##TYPE                                            \
         { nidhog::script::detail::register_script(                      \
               nidhog::script::detail::string_hash()(#TYPE),             \
               &nidhog::script::detail::create_script<TYPE>) };          \
+        const u8 _name_##TYPE                                           \
+        { nidhog::script::detail::add_script_name(#TYPE) };             \
+        }                                                               
+
+#else
+#define REGISTER_SCRIPT(TYPE)                                           \
+        namespace {                                                     \
+        const u8 _reg_##TYPE                                            \
+        { primal::script::detail::register_script(                      \
+              primal::script::detail::string_hash()(#TYPE),             \
+              &primal::script::detail::create_script<TYPE>) };          \
         }
+
+#endif // USE_WITH_EDITOR
         }
     }
 }

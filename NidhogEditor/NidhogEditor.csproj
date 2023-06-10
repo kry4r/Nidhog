@@ -110,7 +110,9 @@
     </ApplicationDefinition>
     <Compile Include="Common\RelayCommand.cs" />
     <Compile Include="Components\Component.cs" />
+    <Compile Include="Components\ComponentFactory.cs" />
     <Compile Include="Components\GameEntity.cs" />
+    <Compile Include="Components\Script.cs" />
     <Compile Include="Components\Transform.cs" />
     <Compile Include="Dictionaries\ControlTemplates.xaml.cs">
       <DependentUpon>ControlTemplates.xaml</DependentUpon>
@@ -124,6 +126,9 @@
     </Compile>
     <Compile Include="Editors\WorldEditor\ProjectLayoutView.xaml.cs">
       <DependentUpon>ProjectLayoutView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Editors\WorldEditor\ScriptView.xaml.cs">
+      <DependentUpon>ScriptView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Editors\WorldEditor\TransformView.xaml.cs">
       <DependentUpon>TransformView.xaml</DependentUpon>
@@ -171,6 +176,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Editors\WorldEditor\ProjectLayoutView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Editors\WorldEditor\ScriptView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
