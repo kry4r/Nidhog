@@ -100,6 +100,11 @@ namespace NidhogEditor.GameProject
         public ICommand SaveCommand { get; private set; }
         public ICommand BuildCommand { get; private set; }
 
+        //游戏exe执行相关
+        public ICommand DebugStartCommand { get; private set; }
+        public ICommand DebugStartWithoutDebuggingCommand { get; private set; }
+        public ICommand DebugStopCommand { get; private set; }
+
         private void SetCommands()
         {
             AddSceneCommand = new RelayCommand<object>(x =>
@@ -129,6 +134,9 @@ namespace NidhogEditor.GameProject
             RedoCommand = new RelayCommand<object>(x => UndoRedo.Redo(), x => UndoRedo.RedoList.Any());
             SaveCommand = new RelayCommand<object>(x => Save(this));
             BuildCommand = new RelayCommand<bool>(async x => await BuildGameDll(x), x => !VisualStudio.IsDebugging() && VisualStudio.BuildDone);
+            DebugStartCommand = new RelayCommand<object>(async x => await RunGame(true), x => !VisualStudio.IsDebugging() && VisualStudio.BuildDone);
+            DebugStartWithoutDebuggingCommand = new RelayCommand<object>(async x => await RunGame(false), x => !VisualStudio.IsDebugging() && VisualStudio.BuildDone);
+            DebugStopCommand = new RelayCommand<object>(async x => await StopGame(), x => VisualStudio.IsDebugging());
 
 
             OnPropertyChanged(nameof(AddSceneCommand));
@@ -137,6 +145,9 @@ namespace NidhogEditor.GameProject
             OnPropertyChanged(nameof(RedoCommand));
             OnPropertyChanged(nameof(SaveCommand));
             OnPropertyChanged(nameof(BuildCommand));
+            OnPropertyChanged(nameof(DebugStartCommand));
+            OnPropertyChanged(nameof(DebugStartWithoutDebuggingCommand));
+            OnPropertyChanged(nameof(DebugStopCommand));
         }
 
         private static string GetConfigurationName(BuildConfiguration config) => _buildConfigurationNames[(int)config];
@@ -169,6 +180,28 @@ namespace NidhogEditor.GameProject
         {
             Serializer.ToFile(project, project.FullPath);
             Logger.Log(MessageType.Info, $"Project saved to {project.FullPath}");
+        }
+
+        //保存为二进制文件
+        private void SaveToBinary()
+        {
+            var configName = GetConfigurationName(StandAloneBuildConfig);
+            var bin = $@"{Path}x64\{configName}\game.bin";
+
+            using (var bw = new BinaryWriter(File.Open(bin, FileMode.Create, FileAccess.Write)))
+            {
+                bw.Write(ActiveScene.GameEntities.Count);
+                foreach (var entity in ActiveScene.GameEntities)
+                {
+                    bw.Write(0); // entity类型 (reserved for later)
+                    bw.Write(entity.Components.Count);//entity数量
+                    foreach (var component in entity.Components)
+                    {
+                        bw.Write((int)component.ToEnumType()); //写入组件类型
+                        component.WriteToBinary(bw);
+                    }
+                }
+            }
         }
 
         private async Task BuildGameDll(bool showWindow =true)
@@ -216,6 +249,20 @@ namespace NidhogEditor.GameProject
                 Logger.Log(MessageType.Warning, "Failed to load game code DLL file. Try to build the project first.");
             }
         }
+
+        //运行游戏
+        private async Task RunGame(bool debug)
+        {
+            var configName = GetConfigurationName(StandAloneBuildConfig);
+            await Task.Run(() => VisualStudio.BuildSolution(this, configName, debug));
+            if (VisualStudio.BuildSucceeded)
+            {
+                SaveToBinary();
+                await Task.Run(() => VisualStudio.Run(this, configName, debug));
+            }
+        }
+        //停止运行游戏
+        private async Task StopGame() => await Task.Run(() => VisualStudio.Stop());
 
         [OnDeserialized]
         private async void OnDeserialized(StreamingContext context)

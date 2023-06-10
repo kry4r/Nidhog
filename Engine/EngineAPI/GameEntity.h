@@ -80,9 +80,9 @@ namespace nidhog
 #define REGISTER_SCRIPT(TYPE)                                           \
         namespace {                                                     \
         const u8 _reg_##TYPE                                            \
-        { primal::script::detail::register_script(                      \
-              primal::script::detail::string_hash()(#TYPE),             \
-              &primal::script::detail::create_script<TYPE>) };          \
+        { nidhog::script::detail::register_script(                      \
+              nidhog::script::detail::string_hash()(#TYPE),             \
+              &nidhog::script::detail::create_script<TYPE>) };          \
         }
 
 #endif // USE_WITH_EDITOR

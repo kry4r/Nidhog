@@ -228,6 +228,24 @@ namespace NidhogEditor.GameDev
             }
             return result;
         }
+
+        //控制游戏运行
+        public static void Run(Project project, string configName, bool debug)
+        {
+            //确定是否在调试状态下启动exe
+            if (_vsInstance != null && !IsDebugging() && BuildDone && BuildSucceeded)
+            {
+                _vsInstance.ExecuteCommand(debug ? "Debug.Start" : "Debug.StartWithoutDebugging");
+            }
+        }
+        //控制游戏停止
+        public static void Stop()
+        {
+            if (_vsInstance != null && IsDebugging())
+            {
+                _vsInstance.ExecuteCommand("Debug.StopDebugging");
+            }
+        }
     }
 }
 
