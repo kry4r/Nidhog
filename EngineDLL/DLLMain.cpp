@@ -1,5 +1,5 @@
 ﻿
-#pragma comment(lib, "engine.lib")
+#pragma comment(lib, "Engine.lib")
 
 
 // DLLMain.cpp : 定义 DLL 应用程序的入口点。

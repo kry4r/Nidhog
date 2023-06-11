@@ -5,3 +5,5 @@ NidhogEditor/bin/
 x64/
 NidhogEditor/obj/
 Engine/x64/
+EngineDLL/x64/
+EngineTest/x64/
