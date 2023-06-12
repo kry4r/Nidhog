@@ -108,6 +108,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Common\Helpers.cs" />
     <Compile Include="Common\RelayCommand.cs" />
     <Compile Include="Components\Component.cs" />
     <Compile Include="Components\ComponentFactory.cs" />
@@ -152,6 +153,10 @@
     <Compile Include="Utilities\Logger.cs" />
     <Compile Include="Utilities\LoggerView.xaml.cs">
       <DependentUpon>LoggerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Utilities\RenderSurface\RenderSurfaceHost.cs" />
+    <Compile Include="Utilities\RenderSurface\RenderSurfaceView.xaml.cs">
+      <DependentUpon>RenderSurfaceView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utilities\Serializer.cs" />
     <Compile Include="Utilities\UndoRedo.cs" />
@@ -235,6 +240,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Utilities\LoggerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Utilities\RenderSurface\RenderSurfaceView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -126,13 +126,20 @@ namespace nidhog::platform {
         {
             window_info& info{ get_from_id(id) };
 
-            // NOTE: 还可以在全屏模式下调整大小
-            //       以支持用户更改屏幕分辨率的情况。
-            RECT& area{ info.is_fullscreen ? info.fullscreen_area : info.client_area };
-            area.bottom = area.top + height;
-            area.right = area.left + width;
+            // NOTE: 当我们在关卡编辑器中托管窗口时，我们只需更新内部数据
+            //       即客户端区域
+            if (info.style & WS_CHILD)
+            {
+                GetClientRect(info.hwnd, &info.client_area);
+            }
+            else
+            {
+                RECT& area{ info.is_fullscreen ? info.fullscreen_area : info.client_area };
+                area.bottom = area.top + height;
+                area.right = area.left + width;
 
-            resize_window(info, area);
+                resize_window(info, area);
+            }
         }
 
         void
@@ -152,8 +159,7 @@ namespace nidhog::platform {
                     GetWindowRect(info.hwnd, &rect);
                     info.top_left.x = rect.left;
                     info.top_left.y = rect.top;
-                    info.style = 0;
-                    SetWindowLongPtr(info.hwnd, GWL_STYLE, info.style);
+                    SetWindowLongPtr(info.hwnd, GWL_STYLE, 0);
                     ShowWindow(info.hwnd, SW_MAXIMIZE);
                 }
                 else
@@ -185,7 +191,7 @@ namespace nidhog::platform {
         math::u32v4  get_window_size(window_id id)
         {
             window_info& info{ get_from_id(id) };
-            RECT area{ info.is_fullscreen ? info.fullscreen_area : info.client_area };
+            RECT& area{ info.is_fullscreen ? info.fullscreen_area : info.client_area };
             return { (u32)area.left, (u32)area.top , (u32)area.right , (u32)area.bottom };
         }
 
@@ -227,6 +233,7 @@ namespace nidhog::platform {
         window_info info{};
         info.client_area.right = (init_info && init_info->width) ? info.client_area.left + init_info->width : info.client_area.right;
         info.client_area.bottom = (init_info && init_info->height) ? info.client_area.top + init_info->height : info.client_area.bottom;
+        info.style |= parent ? WS_CHILD : WS_OVERLAPPEDWINDOW;
 
         RECT rect{ info.client_area };
 
@@ -239,7 +246,6 @@ namespace nidhog::platform {
         const s32 width{ rect.right - rect.left };
         const s32 height{ rect.bottom - rect.top };
 
-        info.style |= parent ? WS_CHILD : WS_OVERLAPPEDWINDOW;
 
 
         //创建一个window类的实例

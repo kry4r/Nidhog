@@ -41,6 +41,7 @@ namespace NidhogEditor.DllWrapper
 {
     static class EngineAPI
     {
+        //通过dll文件导入
         private const string _engineDll = "EngineDll.dll";
         [DllImport(_engineDll, CharSet = CharSet.Ansi)]
         public static extern int LoadGameCodeDll(string dllPath);
@@ -52,6 +53,14 @@ namespace NidhogEditor.DllWrapper
         [DllImport(_engineDll)]
         [return: MarshalAs(UnmanagedType.SafeArray)]
         public static extern string[] GetScriptNames();
+        [DllImport(_engineDll)]
+        public static extern int CreateRenderSurface(IntPtr host, int width, int height);
+        [DllImport(_engineDll)]
+        public static extern int RemoveRenderSurface(int surfaceId);
+        [DllImport(_engineDll)]
+        public static extern IntPtr GetWindowHandle(int surfaceId);
+        [DllImport(_engineDll)]
+        public static extern int ResizeRenderSurface(int surfaceId);
         internal static class EntityAPI
         {
             [DllImport(_engineDll)]

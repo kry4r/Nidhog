@@ -9,7 +9,6 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using static NidhogEditor.Utilities.MathUtil;
 using NidhogEditor.DllWrapper;
 
 namespace NidhogEditor.Components
