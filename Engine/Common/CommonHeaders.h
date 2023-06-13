@@ -13,6 +13,7 @@
 #endif
 //Common header
 #include"PrimitiveTypes.h"
+#include "..\Utilities\Math.h"
 #include"..\Utilities\Utilities.h"
 #include"..\Utilities\MathType.h"
 #include "id.h"
