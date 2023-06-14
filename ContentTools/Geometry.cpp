@@ -38,7 +38,7 @@ namespace nidhog::tools
         //主要使用cos来判断，即点乘
         void process_normals(mesh& m, f32 smoothing_angle)
         {
-            const f32 cos_angle{ XMScalarCos(pi - smoothing_angle * pi / 180.f) };
+            const f32 cos_alpha{ XMScalarCos(pi - smoothing_angle * pi / 180.f) };
             const bool is_hard_edge{ XMScalarNearEqual(smoothing_angle, 180.f, epsilon) };
             const bool is_soft_edge{ XMScalarNearEqual(smoothing_angle, 0.f, epsilon) };
             const u32 num_indices{ (u32)m.raw_indices.size() };
@@ -70,7 +70,7 @@ namespace nidhog::tools
                         for (u32 k{ j + 1 }; k < num_refs; ++k)
                         {
                             // 该值表示法线之间角度的余弦。
-                            f32 n{ 0.f };
+                            f32 cos_theta{ 0.f };
                             XMVECTOR n2{ XMLoadFloat3(&m.normals[refs[k]]) };
                             if (!is_soft_edge)
                             {
@@ -78,13 +78,13 @@ namespace nidhog::tools
                                 //       因为它可能在这个循环迭代中发生变化。
                                 //       我们假定n2为单位长度
                                 //       cos(angle) = dot(n1, n2) / (||n1||*||n2||)
-                                XMStoreFloat(&n, XMVector3Dot(n1, n2) * XMVector3ReciprocalLength(n1));
+                                XMStoreFloat(&cos_theta, XMVector3Dot(n1, n2) * XMVector3ReciprocalLength(n1));
                             }
 
                             //检查法线之间夹角判断是否法线相加或分开
 
                             //若是软的则法线相加平均
-                            if (is_soft_edge || n >= cos_angle)
+                            if (is_soft_edge || cos_theta >= cos_alpha)
                             {
                                 n1 += n2;
                                 //同步索引
@@ -193,6 +193,104 @@ namespace nidhog::tools
             pack_vertices_static(m);
         }
 
+        u64 get_mesh_size(const mesh& m)
+        {
+            const u64 num_vertices{ m.vertices.size() };
+            const u64 vertex_buffer_size{ sizeof(packed_vertex::vertex_static) * num_vertices };
+            const u64 index_size{ (num_vertices < (1 << 16)) ? sizeof(u16) : sizeof(u32) };
+            const u64 index_buffer_size{ index_size * m.indices.size() };
+            constexpr u64 su32{ sizeof(u32) };
+            const u64 size{
+                su32 + m.name.size() + // mesh层级名字以及储存地点
+                su32 + // lod id
+                su32 + // 顶点大小
+                su32 + // 顶点编号
+                su32 + // 索引size (16 bit or 32 bit)
+                su32 + // 索引数字
+                sizeof(f32) + // LOD阈值
+                vertex_buffer_size + // room for vertices
+                index_buffer_size // room for indices
+            };
+
+            return size;
+        }
+
+        u64 get_scene_size(const scene& scene)
+        {
+            constexpr u64 su32{ sizeof(u32) };
+            u64 size
+            {
+                su32 +              // 名字长度
+                scene.name.size() + // 场景名字字符串储存地点
+                su32                // LOD层级
+            };
+
+            for (auto& lod : scene.lod_groups)
+            {
+                u64 lod_size
+                {
+                    su32 + lod.name.size() + // LOD层级名字以及储存地点
+                    su32                     // 在LOD中mesh的编号
+                };
+
+                for (auto& m : lod.meshes)
+                {
+                    //计算mesh需要多少空间
+                    lod_size += get_mesh_size(m);
+                }
+
+                size += lod_size;
+            }
+
+            return size;
+        }
+
+        void pack_mesh_data(const mesh& m, u8* const buffer, u64& at)
+        {
+            constexpr u64 su32{ sizeof(u32) };
+            u32 s{ 0 };
+            // mesh name
+            s = (u32)m.name.size();
+            memcpy(&buffer[at], &s, su32); at += su32;
+            memcpy(&buffer[at], m.name.c_str(), s); at += s;
+            // lod id
+            s = m.lod_id;
+            memcpy(&buffer[at], &s, su32); at += su32;
+            // vertex size
+            constexpr u32 vertex_size{ sizeof(packed_vertex::vertex_static) };
+            s = vertex_size;
+            memcpy(&buffer[at], &s, su32); at += su32;
+            // number of vertices
+            const u32 num_vertices{ (u32)m.vertices.size() };
+            s = num_vertices;
+            memcpy(&buffer[at], &s, su32); at += su32;
+            // index size (16 bit or 32 bit)
+            const u32 index_size{ (num_vertices < (1 << 16)) ? sizeof(u16) : sizeof(u32) };
+            s = index_size;
+            memcpy(&buffer[at], &s, su32); at += su32;
+            // number of indices
+            const u32 num_indices{ (u32)m.indices.size() };
+            s = num_indices;
+            memcpy(&buffer[at], &s, su32); at += su32;
+            // LOD threshold
+            memcpy(&buffer[at], &m.lod_threshold, sizeof(f32)); at += sizeof(f32);
+            // vertex data
+            s = vertex_size * num_vertices;
+            memcpy(&buffer[at], m.packed_vertices_static.data(), s); at += s;
+            // index data
+            s = index_size * num_indices;
+            void* data{ (void*)m.indices.data() };
+            utl::vector<u16> indices;
+
+            if (index_size == sizeof(u16))
+            {
+                indices.resize(num_indices);
+                for (u32 i{ 0 }; i < num_indices; ++i) indices[i] = (u16)m.indices[i];
+                data = (void*)indices.data();
+            }
+            memcpy(&buffer[at], data, s); at += s;
+        }
+
 	}//匿名namespace
     void process_scene(scene& scene, const geometry_import_settings& settings)
     {
@@ -204,6 +302,43 @@ namespace nidhog::tools
             }
     }
 
+
     void pack_data(const scene& scene, scene_data& data)
-    {}
+    {
+        constexpr u64 su32{ sizeof(u32) };
+        //获取scene大小
+        const u64 scene_size{ get_scene_size(scene) };
+        //保存在buffer中，分配内存以传给editor
+        data.buffer_size = (u32)scene_size;
+        data.buffer = (u8*)CoTaskMemAlloc(scene_size);
+        assert(data.buffer);
+        
+        u8* const buffer{ data.buffer };
+        u64 at{ 0 };//每次添加的偏移量
+        u32 s{ 0 };//临时变量，用于将其他u32成员变量写入buffer
+        
+        // scene name
+        s = (u32)scene.name.size();
+        memcpy(&buffer[at], &s, su32); at += su32;
+        memcpy(&buffer[at], scene.name.c_str(), s); at += s;
+        // number of LODs
+        s = (u32)scene.lod_groups.size();
+        memcpy(&buffer[at], &s, su32); at += su32;
+        
+        for (auto& lod : scene.lod_groups)
+        {
+            // LOD name
+            s = (u32)lod.name.size();
+            memcpy(&buffer[at], &s, su32); at += su32;
+            memcpy(&buffer[at], lod.name.c_str(), s); at += s;
+            // number of meshes in this LOD
+            s = (u32)lod.meshes.size();
+            memcpy(&buffer[at], &s, su32); at += su32;
+        
+            for (auto& m : lod.meshes)
+            {
+                pack_mesh_data(m, buffer, at);
+            }
+        }
+    }
 }

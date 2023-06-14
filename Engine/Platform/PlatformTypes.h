@@ -3,8 +3,8 @@
 #include "CommonHeaders.h"
 
 #ifdef _WIN64
-#ifndef WIN32_MEAN_AND_LEAN
-#define WIN32_MEAN_AND_LEAN
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
 #endif
 //平台特定头文件
 #include <Windows.h>
