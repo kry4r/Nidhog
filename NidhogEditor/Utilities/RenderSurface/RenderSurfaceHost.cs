@@ -14,21 +14,20 @@ namespace NidhogEditor.Utilities
     //网址：https://learn.microsoft.com/zh-cn/dotnet/desktop/wpf/advanced/hosting-win32-content-in-wpf?view=netframeworkdesktop-4.8
     class RenderSurfaceHost : HwndHost
     {
+        private readonly int VK_LBUTTON = 0x01;
         private readonly int _width = 800;
         private readonly int _height = 600;
         private IntPtr _renderWindowHandle = IntPtr.Zero;
         private DelayEventTimer _resizeTimer;
 
+        [DllImport("user32.dll")]
+        private static extern short GetAsyncKeyState(int vKey);
         public int SurfaceId { get; private set; } = ID.INVALID_ID;
 
-        public void Resize()
-        {
-            _resizeTimer.Trigger();
-        }
 
         private void Resize(object sender, DelayEventTimerArgs e)
         {
-            e.RepeatEvent = Mouse.LeftButton == MouseButtonState.Pressed;
+            e.RepeatEvent = GetAsyncKeyState(VK_LBUTTON) < 0;
             if (!e.RepeatEvent)
             {
                 EngineAPI.ResizeRenderSurface(SurfaceId);
@@ -41,6 +40,7 @@ namespace NidhogEditor.Utilities
             _height = (int)height;
             _resizeTimer = new DelayEventTimer(TimeSpan.FromMilliseconds(250.0));
             _resizeTimer.Triggered += Resize;
+            SizeChanged += (s, e) => _resizeTimer.Trigger();
         }
 
         //创建一个托管窗口

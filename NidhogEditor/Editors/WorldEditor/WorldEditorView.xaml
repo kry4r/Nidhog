@@ -39,6 +39,7 @@
                 <ComboBoxItem Content="Debug"/>
                 <ComboBoxItem Content="Release"/>
             </ComboBox>
+            <Button Content="基本网格体" Click="OnCreatePrimitiveMesh_Button_Click" Margin="10,0"/>
         </StackPanel>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>

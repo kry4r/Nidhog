@@ -1,4 +1,5 @@
-﻿using NidhogEditor.GameDev;
+﻿using NidhogEditor.Content;
+using NidhogEditor.GameDev;
 using NidhogEditor.GameProject;
 using System;
 using System.Collections.Generic;
@@ -38,6 +39,12 @@ namespace NidhogEditor.Editors
         private void OnNewScript_Button_Click(object sender, RoutedEventArgs e)
         {
             new NewScriptDialog().ShowDialog();
+        }
+
+        private void OnCreatePrimitiveMesh_Button_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new PrimitiveMeshDialog();
+            dlg.ShowDialog();
         }
     }
 }

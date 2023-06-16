@@ -97,11 +97,19 @@
     <Compile Include="Components\Transform.cs" />
     <Compile Include="Content\Asset.cs" />
     <Compile Include="Content\Geometry.cs" />
+    <Compile Include="Content\PrimitiveMeshDialog.xaml.cs">
+      <DependentUpon>PrimitiveMeshDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dictionaries\ControlTemplates.xaml.cs">
       <DependentUpon>ControlTemplates.xaml</DependentUpon>
     </Compile>
     <Compile Include="DllWrapper\ContentToolsAPI.cs" />
     <Compile Include="DllWrapper\EngineAPI.cs" />
+    <Compile Include="Editors\GeometryEditor\GeomertyView.xaml.cs">
+      <DependentUpon>GeomertyView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Editors\GeometryEditor\GeometryEditor.cs" />
+    <Compile Include="Editors\IAssetEditor.cs" />
     <Compile Include="Editors\WorldEditor\ComponentView.xaml.cs">
       <DependentUpon>ComponentView.xaml</DependentUpon>
     </Compile>
@@ -147,11 +155,19 @@
       <DependentUpon>UndoRedoView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utilities\Utilities.cs" />
+    <Page Include="Content\PrimitiveMeshDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Dictionaries\ControlTemplates.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dictionaries\EditorColors.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Editors\GeometryEditor\GeomertyView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -302,6 +318,10 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\PrimitiveMeshView\abc.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
