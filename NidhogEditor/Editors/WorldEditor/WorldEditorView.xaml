@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:NidhogEditor.Editors"
              xmlns:utl ="clr-namespace:NidhogEditor.Utilities"
              xmlns:ctlr="clr-namespace:NidhogEditor.Utilities.Controls"
-             xmlns:sys="clr-namespace:System;assembly=mscorlib" 
+             xmlns:sys="clr-namespace:System;assembly=mscorlib" xmlns:gameproject="clr-namespace:NidhogEditor.GameProject" d:DataContext="{d:DesignInstance Type=gameproject:Project}"
              mc:Ignorable="d" Focusable="True"
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>

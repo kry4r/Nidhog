@@ -30,6 +30,7 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <XamlDebuggingInformation>True</XamlDebuggingInformation>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>NidhogEditor.App</StartupObject>
@@ -319,7 +320,9 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\PrimitiveMeshView\Checkermap.png" />
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\PrimitiveMeshView\abc.png" />
   </ItemGroup>
