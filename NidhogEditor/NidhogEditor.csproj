@@ -1,330 +1,44 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{EE0B09A0-B451-4415-868B-15A71A581487}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>NidhogEditor</RootNamespace>
-    <AssemblyName>NidhogEditor</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <WarningLevel>4</WarningLevel>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Deterministic>true</Deterministic>
-    <LangVersion>8.0</LangVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <XamlDebuggingInformation>True</XamlDebuggingInformation>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <Platforms>x64</Platforms>
+    <Configurations>DebugEditor;ReleaseEditor</Configurations>
+    <BaseOutputPath>..\</BaseOutputPath>
   </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject>NidhogEditor.App</StartupObject>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugEditor|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\x64\DebugEditor\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>8.0</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseEditor|x64'">
-    <OutputPath>..\x64\ReleaseEditor\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>8.0</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="CommonServiceLocator, Version=2.0.2.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
-      <HintPath>..\packages\CommonServiceLocator.2.0.2\lib\net47\CommonServiceLocator.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Runtime.Caching" />
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="System.Runtime.DurableInstancing" />
-    <Reference Include="System.Runtime.Remoting" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Runtime.Serialization.Formatters.Soap" />
-    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\MvvmLightLibs.5.4.1.1\lib\net45\System.Windows.Interactivity.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xaml">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="WindowsBase" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-  </ItemGroup>
-  <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
-    <Compile Include="Common\Helpers.cs" />
-    <Compile Include="Common\RelayCommand.cs" />
-    <Compile Include="Components\Component.cs" />
-    <Compile Include="Components\ComponentFactory.cs" />
-    <Compile Include="Components\GameEntity.cs" />
-    <Compile Include="Components\Script.cs" />
-    <Compile Include="Components\Transform.cs" />
-    <Compile Include="Content\Asset.cs" />
-    <Compile Include="Content\Geometry.cs" />
-    <Compile Include="Content\PrimitiveMeshDialog.xaml.cs">
-      <DependentUpon>PrimitiveMeshDialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Dictionaries\ControlTemplates.xaml.cs">
-      <DependentUpon>ControlTemplates.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="DllWrapper\ContentToolsAPI.cs" />
-    <Compile Include="DllWrapper\EngineAPI.cs" />
-    <Compile Include="Editors\GeometryEditor\GeomertyView.xaml.cs">
-      <DependentUpon>GeomertyView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Editors\GeometryEditor\GeometryEditor.cs" />
-    <Compile Include="Editors\IAssetEditor.cs" />
-    <Compile Include="Editors\WorldEditor\ComponentView.xaml.cs">
-      <DependentUpon>ComponentView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Editors\WorldEditor\GameEntityView.xaml.cs">
-      <DependentUpon>GameEntityView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Editors\WorldEditor\ProjectLayoutView.xaml.cs">
-      <DependentUpon>ProjectLayoutView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Editors\WorldEditor\ScriptView.xaml.cs">
-      <DependentUpon>ScriptView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Editors\WorldEditor\TransformView.xaml.cs">
-      <DependentUpon>TransformView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Editors\WorldEditor\WorldEditorView.xaml.cs">
-      <DependentUpon>WorldEditorView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="EnginePathDialog.xaml.cs">
-      <DependentUpon>EnginePathDialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="GameDev\NewScriptDialog.xaml.cs">
-      <DependentUpon>NewScriptDialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="GameDev\VisualStudio.cs" />
-    <Compile Include="GameProject\OpenProject.cs" />
-    <Compile Include="GameProject\Project.cs" />
-    <Compile Include="GameProject\Scene.cs" />
-    <Compile Include="Utilities\Controls\NumberBox.cs" />
-    <Compile Include="Utilities\Controls\ScalarBox.cs" />
-    <Compile Include="Utilities\Controls\VectorBox.cs" />
-    <Compile Include="Utilities\Logger.cs" />
-    <Compile Include="Utilities\LoggerView.xaml.cs">
-      <DependentUpon>LoggerView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Utilities\RenderSurface\RenderSurfaceHost.cs" />
-    <Compile Include="Utilities\RenderSurface\RenderSurfaceView.xaml.cs">
-      <DependentUpon>RenderSurfaceView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Utilities\Serializer.cs" />
-    <Compile Include="Utilities\UndoRedo.cs" />
-    <Compile Include="Utilities\UndoRedoView.xaml.cs">
-      <DependentUpon>UndoRedoView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Utilities\Utilities.cs" />
-    <Page Include="Content\PrimitiveMeshDialog.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Dictionaries\ControlTemplates.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Dictionaries\EditorColors.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Editors\GeometryEditor\GeomertyView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Editors\WorldEditor\ComponentView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Editors\WorldEditor\GameEntityView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Editors\WorldEditor\ProjectLayoutView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Editors\WorldEditor\ScriptView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Editors\WorldEditor\TransformView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Editors\WorldEditor\WorldEditorView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="EnginePathDialog.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="GameDev\NewScriptDialog.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="GameProject\NewProjectView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="GameProject\OpenProjectView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="GameProject\ProjectBrowsweDialg.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Common\ViewModelBase.cs" />
-    <Compile Include="GameProject\NewProject.cs" />
-    <Compile Include="GameProject\NewProjectView.xaml.cs">
-      <DependentUpon>NewProjectView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="GameProject\OpenProjectView.xaml.cs">
-      <DependentUpon>OpenProjectView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="GameProject\ProjectBrowsweDialg.xaml.cs">
-      <DependentUpon>ProjectBrowsweDialg.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Page Include="Utilities\LoggerView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Utilities\RenderSurface\RenderSurfaceView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Utilities\UndoRedoView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <None Include="packages.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4.7.2 %28x86 和 x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <COMReference Include="EnvDTE">
-      <Guid>{80CC9F66-E7D8-4DDD-85B6-D9E6CD0E93E2}</Guid>
-      <VersionMajor>8</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
+    <COMReference Include="EnvDTE80">
       <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
+      <VersionMinor>0</VersionMinor>
+      <VersionMajor>8</VersionMajor>
+      <Guid>1a31287a-4d7d-413e-8e32-3b374931bd89</Guid>
+      <Lcid>0</Lcid>
+      <Isolated>false</Isolated>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="EnvDTE">
+      <WrapperTool>tlbimp</WrapperTool>
+      <VersionMinor>0</VersionMinor>
+      <VersionMajor>8</VersionMajor>
+      <Guid>80cc9f66-e7d8-4ddd-85b6-d9e6cd0e93e2</Guid>
+      <Lcid>0</Lcid>
+      <Isolated>false</Isolated>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </COMReference>
-    <COMReference Include="EnvDTE80">
-      <Guid>{1A31287A-4D7D-413E-8E32-3B374931BD89}</Guid>
-      <VersionMajor>8</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
-    <COMReference Include="stdole">
-      <Guid>{00020430-0000-0000-C000-000000000046}</Guid>
-      <VersionMajor>2</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
   </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\PrimitiveMeshView\Checkermap.png" />
-  </ItemGroup>
+
   <ItemGroup>
     <Resource Include="Resources\PrimitiveMeshView\abc.png" />
+    <Resource Include="Resources\PrimitiveMeshView\Checkermap.png" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.6.2115" />
+  </ItemGroup>
+
 </Project>

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -9,7 +11,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-
+using System.Windows.Shapes;
 
 namespace NidhogEditor
 {
@@ -33,11 +35,11 @@ namespace NidhogEditor
             {
                 messageTextBlock.Text = "路径无效";
             }
-            else if (path.IndexOfAny(Path.GetInvalidPathChars()) != -1)
+            else if (path.IndexOfAny(System.IO.Path.GetInvalidPathChars()) != -1)
             {
                 messageTextBlock.Text = "路径中使用了无效字符";
             }
-            else if (!Directory.Exists(Path.Combine(path, @"Engine\EngineAPI\")))
+            else if (!Directory.Exists(System.IO.Path.Combine(path, @"Engine\EngineAPI\")))
             {
                 messageTextBlock.Text = "无法在指定位置找到引擎";
             }

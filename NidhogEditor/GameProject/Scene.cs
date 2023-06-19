@@ -1,4 +1,5 @@
-﻿using NidhogEditor.Components;
+﻿
+using NidhogEditor.Components;
 using NidhogEditor.Utilities;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ using System.Windows.Input;
 namespace NidhogEditor.GameProject
 {
     [DataContract]
-    class Scene :ViewModelBase
+    class Scene : ViewModelBase
     {
         private string _name;
         [DataMember]
@@ -30,7 +31,7 @@ namespace NidhogEditor.GameProject
             }
         }
         [DataMember]
-        public Project Project { get;private set; }
+        public Project Project { get; private set; }
 
         private bool _isActive;
         [DataMember]
@@ -113,13 +114,13 @@ namespace NidhogEditor.GameProject
             });
         }
 
-        public Scene(Project project,string name)
+        public Scene(Project project, string name)
         {
             Debug.Assert(project != null);
             Project = project;
             Name = name;
             OnDeserialized(new StreamingContext());
         }
-        
+
     }
 }

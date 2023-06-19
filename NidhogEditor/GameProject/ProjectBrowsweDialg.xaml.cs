@@ -63,11 +63,11 @@ namespace NidhogEditor.GameProject
             }
         }
 
-        private void OnToggleButton_Click(object sender,RoutedEventArgs e)
+        private void OnToggleButton_Click(object sender, RoutedEventArgs e)
         {
-            if(sender == openProjectButton)
+            if (sender == openProjectButton)
             {
-                if(createProjectButton.IsChecked == true)
+                if (createProjectButton.IsChecked == true)
                 {
                     createProjectButton.IsChecked = false;
                     AnimateToOpenProject();

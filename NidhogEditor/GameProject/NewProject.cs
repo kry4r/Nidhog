@@ -1,14 +1,14 @@
-﻿using System;
+﻿
+using NidhogEditor.Utilities;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
-using System.ComponentModel;
-using System.IO;
-using System.Diagnostics;
-using System.Runtime.Serialization;
-using NidhogEditor.Utilities;
-using System.Collections.ObjectModel;
 
 namespace NidhogEditor.GameProject
 {

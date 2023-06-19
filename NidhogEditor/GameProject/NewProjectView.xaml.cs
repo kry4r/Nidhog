@@ -25,7 +25,7 @@ namespace NidhogEditor.GameProject
             InitializeComponent();
         }
 
-        private void OnCreate_Button_Click(object sender,RoutedEventArgs e)
+        private void OnCreate_Button_Click(object sender, RoutedEventArgs e)
         {
             var vm = DataContext as NewProject;
             var projectPath = vm.CreateProject(templateListBox.SelectedItem as ProjectTemplate);

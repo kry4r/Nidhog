@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
-
+using EnvDTE80;
 namespace NidhogEditor.GameDev
 {
     static class VisualStudio
@@ -150,7 +150,7 @@ namespace NidhogEditor.GameDev
             }
             return true;
         }
-        public static void BuildSolution(Project project, string configName, bool showWindow=true)
+        public static void BuildSolution(Project project, string configName, bool showWindow = true)
         {
             if (IsDebugging())
             {
@@ -180,7 +180,7 @@ namespace NidhogEditor.GameDev
 
                     _vsInstance.Solution.SolutionBuild.SolutionConfigurations.Item(configName).Activate();
                     _vsInstance.ExecuteCommand("Build.BuildSolution");
-                
+
                 }
                 catch (Exception ex)
                 {

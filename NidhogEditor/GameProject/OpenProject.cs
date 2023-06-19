@@ -9,6 +9,7 @@ using System.IO;
 using System.Collections.ObjectModel;
 using NidhogEditor.Utilities;
 
+
 namespace NidhogEditor.GameProject
 {
     [DataContract]
@@ -32,7 +33,7 @@ namespace NidhogEditor.GameProject
         [DataMember]
         public List<ProjectData> Projects { get; set; }
     }
-    class OpenProject :ViewModelBase
+    class OpenProject : ViewModelBase
     {
         private static readonly string _applicationDataPath = $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\NidhogEditor\";
         private static readonly string _projectDataPath;
@@ -67,7 +68,7 @@ namespace NidhogEditor.GameProject
         {
             ReadProjectData();
             var project = _projects.FirstOrDefault(x => x.FullPath == data.FullPath);
-            if(project != null)
+            if (project != null)
             {
                 project.Date = DateTime.Now;
             }
@@ -92,7 +93,7 @@ namespace NidhogEditor.GameProject
                 Projects = new ReadOnlyObservableCollection<ProjectData>(_projects);
                 ReadProjectData();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
                 Logger.Log(MessageType.Error, $"Failed to load project data");

@@ -104,4 +104,3 @@ namespace NidhogEditor.Utilities
         }
     }
 }
-

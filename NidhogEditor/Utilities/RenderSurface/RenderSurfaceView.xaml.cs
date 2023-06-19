@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,7 +19,7 @@ namespace NidhogEditor.Utilities
     /// <summary>
     /// RenderSurfaceView.xaml 的交互逻辑
     /// </summary>
-    public partial class RenderSurfaceView : UserControl ,IDisposable
+    public partial class RenderSurfaceView : UserControl, IDisposable
     {
         //copy一些message类型
         private enum Win32Msg
@@ -34,7 +33,7 @@ namespace NidhogEditor.Utilities
 
 
         private RenderSurfaceHost _host = null;
-        
+
 
         public RenderSurfaceView()
         {
@@ -50,10 +49,10 @@ namespace NidhogEditor.Utilities
             _host.MessageHook += new HwndSourceHook(HostMsgFilter);
             Content = _host;
 
-            
+
         }
 
-        
+
 
         private IntPtr HostMsgFilter(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {

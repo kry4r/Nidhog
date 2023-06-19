@@ -1,17 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.32630.194
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33801.468
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "Engine\Engine.vcxproj", "{CDF4EE00-97C8-4E4F-B8F5-5B396B09948F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NidhogEditor", "NidhogEditor\NidhogEditor.csproj", "{EE0B09A0-B451-4415-868B-15A71A581487}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EngineTest", "EngineTest\EngineTest.vcxproj", "{2F1DF686-CD04-4BAA-ACEC-B2987AEC286E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EngineDLL", "EngineDLL\EngineDLL.vcxproj", "{7413F66B-C60F-4528-9F08-603663F9F4A3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ContentTools", "ContentTools\ContentTools.vcxproj", "{6F848DDD-A415-42AA-87B2-65873C63A0EF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NidhogEditor", "NidhogEditor\NidhogEditor.csproj", "{DF4503AB-9DE8-4B2E-880C-888D46EAE874}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,14 +29,6 @@ Global
 		{CDF4EE00-97C8-4E4F-B8F5-5B396B09948F}.Release|x64.Build.0 = Release|x64
 		{CDF4EE00-97C8-4E4F-B8F5-5B396B09948F}.ReleaseEditor|x64.ActiveCfg = ReleaseEditor|x64
 		{CDF4EE00-97C8-4E4F-B8F5-5B396B09948F}.ReleaseEditor|x64.Build.0 = ReleaseEditor|x64
-		{EE0B09A0-B451-4415-868B-15A71A581487}.Debug|x64.ActiveCfg = DebugEditor|x64
-		{EE0B09A0-B451-4415-868B-15A71A581487}.Debug|x64.Build.0 = DebugEditor|x64
-		{EE0B09A0-B451-4415-868B-15A71A581487}.DebugEditor|x64.ActiveCfg = DebugEditor|x64
-		{EE0B09A0-B451-4415-868B-15A71A581487}.DebugEditor|x64.Build.0 = DebugEditor|x64
-		{EE0B09A0-B451-4415-868B-15A71A581487}.Release|x64.ActiveCfg = ReleaseEditor|x64
-		{EE0B09A0-B451-4415-868B-15A71A581487}.Release|x64.Build.0 = ReleaseEditor|x64
-		{EE0B09A0-B451-4415-868B-15A71A581487}.ReleaseEditor|x64.ActiveCfg = ReleaseEditor|x64
-		{EE0B09A0-B451-4415-868B-15A71A581487}.ReleaseEditor|x64.Build.0 = ReleaseEditor|x64
 		{2F1DF686-CD04-4BAA-ACEC-B2987AEC286E}.Debug|x64.ActiveCfg = Debug|x64
 		{2F1DF686-CD04-4BAA-ACEC-B2987AEC286E}.Debug|x64.Build.0 = Debug|x64
 		{2F1DF686-CD04-4BAA-ACEC-B2987AEC286E}.DebugEditor|x64.ActiveCfg = DebugEditor|x64
@@ -61,6 +53,14 @@ Global
 		{6F848DDD-A415-42AA-87B2-65873C63A0EF}.Release|x64.Build.0 = ReleaseEditor|x64
 		{6F848DDD-A415-42AA-87B2-65873C63A0EF}.ReleaseEditor|x64.ActiveCfg = ReleaseEditor|x64
 		{6F848DDD-A415-42AA-87B2-65873C63A0EF}.ReleaseEditor|x64.Build.0 = ReleaseEditor|x64
+		{DF4503AB-9DE8-4B2E-880C-888D46EAE874}.Debug|x64.ActiveCfg = DebugEditor|x64
+		{DF4503AB-9DE8-4B2E-880C-888D46EAE874}.Debug|x64.Build.0 = DebugEditor|x64
+		{DF4503AB-9DE8-4B2E-880C-888D46EAE874}.DebugEditor|x64.ActiveCfg = DebugEditor|x64
+		{DF4503AB-9DE8-4B2E-880C-888D46EAE874}.DebugEditor|x64.Build.0 = DebugEditor|x64
+		{DF4503AB-9DE8-4B2E-880C-888D46EAE874}.Release|x64.ActiveCfg = DebugEditor|x64
+		{DF4503AB-9DE8-4B2E-880C-888D46EAE874}.Release|x64.Build.0 = DebugEditor|x64
+		{DF4503AB-9DE8-4B2E-880C-888D46EAE874}.ReleaseEditor|x64.ActiveCfg = DebugEditor|x64
+		{DF4503AB-9DE8-4B2E-880C-888D46EAE874}.ReleaseEditor|x64.Build.0 = DebugEditor|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

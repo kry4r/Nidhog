@@ -27,7 +27,7 @@ namespace NidhogEditor.Utilities
         public int Line { get; }
         public string MetaData => $"{File}:{Caller} ({Line})";
 
-        public LogMessage(MessageType type,string msg,string file,string caller,int line)
+        public LogMessage(MessageType type, string msg, string file, string caller, int line)
         {
             Time = DateTime.Now;
             MessageType = type;
@@ -36,7 +36,7 @@ namespace NidhogEditor.Utilities
             Caller = caller;
             Line = line;
         }
-    } 
+    }
     static class Logger
     {
         private static int _messageFilter = (int)(MessageType.Info | MessageType.Warning | MessageType.Error);
@@ -46,8 +46,8 @@ namespace NidhogEditor.Utilities
         public static CollectionViewSource FilteredMessages { get; } = new CollectionViewSource() { Source = Messages };
 
         public static async void Log(MessageType type, string msg
-            ,[CallerFilePath] string file = "", [CallerMemberName] string caller = "",
-            [CallerLineNumber] int line=0)
+            , [CallerFilePath] string file = "", [CallerMemberName] string caller = "",
+            [CallerLineNumber] int line = 0)
         {
             await Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {

@@ -1,4 +1,5 @@
-﻿using NidhogEditor.Components;
+﻿
+using NidhogEditor.Components;
 using NidhogEditor.DllWrapper;
 using NidhogEditor.GameDev;
 using NidhogEditor.Utilities;
@@ -13,6 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace NidhogEditor.GameProject
 {
@@ -35,7 +37,7 @@ namespace NidhogEditor.GameProject
         public string FullPath => $@"{Path}{Name}{Extension}";
         public string Solution => $@"{Path}{Name}.sln";
 
-        private static readonly string[] _buildConfigurationNames = new string[] {"Debug","DebugEditor","Release","ReleaseEditor"};
+        private static readonly string[] _buildConfigurationNames = new string[] { "Debug", "DebugEditor", "Release", "ReleaseEditor" };
 
         private int _buildConfig;
         [DataMember]
@@ -70,7 +72,7 @@ namespace NidhogEditor.GameProject
             }
         }
 
-        [DataMember(Name ="Scenes")]
+        [DataMember(Name = "Scenes")]
         private ObservableCollection<Scene> _scenes = new ObservableCollection<Scene>();
         public ReadOnlyObservableCollection<Scene> Scenes { get; private set; }
 
@@ -80,7 +82,7 @@ namespace NidhogEditor.GameProject
             get => _activateScene;
             set
             {
-                if(_activateScene != value)
+                if (_activateScene != value)
                 {
                     _activateScene = value;
                     OnPropertyChanged(nameof(ActiveScene));
@@ -204,20 +206,20 @@ namespace NidhogEditor.GameProject
             }
         }
 
-        private async Task BuildGameDll(bool showWindow =true)
+        private async Task BuildGameDll(bool showWindow = true)
         {
             try
             {
                 UnloadGameDll();
                 //生成代码dll
-                await Task.Run(()=>VisualStudio.BuildSolution(this, GetConfigurationName(DllBuildConfig),showWindow));
+                await Task.Run(() => VisualStudio.BuildSolution(this, GetConfigurationName(DllBuildConfig), showWindow));
                 //如果生成成功
                 if (VisualStudio.BuildSucceeded)
                 {
                     LoadGameCodeDll();
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
                 throw;
@@ -280,7 +282,7 @@ namespace NidhogEditor.GameProject
             SetCommands();
         }
 
-        public Project(string name,string path)
+        public Project(string name, string path)
         {
             Name = name;
             Path = path;

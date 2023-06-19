@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,12 +15,11 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.IO;
 
 namespace NidhogEditor
 {
     /// <summary>
-    /// MainWindow.xaml 的交互逻辑
+    /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
@@ -37,14 +37,14 @@ namespace NidhogEditor
             Project.Current?.Unload();
         }
 
-        private void OnMainwindowLoaded(object sender,RoutedEventArgs e)
+        private void OnMainwindowLoaded(object sender, RoutedEventArgs e)
         {
             Loaded -= OnMainwindowLoaded;
             GetEnginePath();
             OpenProjectBrowserDialog();
         }
 
-        
+
         private void GetEnginePath()
         {
             var nidhogPath = Environment.GetEnvironmentVariable("NIDHOG_ENGINE", EnvironmentVariableTarget.User);
@@ -66,11 +66,11 @@ namespace NidhogEditor
                 NidhogPath = nidhogPath;
             }
         }
-        
+
         private void OpenProjectBrowserDialog()
         {
             var projectBrowser = new ProjectBrowsweDialg();
-            if(projectBrowser.ShowDialog() == false || projectBrowser.DataContext == null)
+            if (projectBrowser.ShowDialog() == false || projectBrowser.DataContext == null)
             {
                 Application.Current.Shutdown();
             }

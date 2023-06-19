@@ -4,7 +4,7 @@
              xmlns:local="clr-namespace:NidhogEditor"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <ResourceDictionary>
+         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/Dictionaries/EditorColors.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/Dictionaries/ControlTemplates.xaml"/>

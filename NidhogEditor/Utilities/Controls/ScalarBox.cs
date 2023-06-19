@@ -7,7 +7,7 @@ using System.Windows;
 
 namespace NidhogEditor.Utilities.Controls
 {
-    class ScalarBox : NumberBox
+    internal class ScalarBox : NumberBox
     {
         static ScalarBox()
         {

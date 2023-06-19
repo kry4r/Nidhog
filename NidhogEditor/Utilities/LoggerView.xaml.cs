@@ -25,11 +25,11 @@ namespace NidhogEditor.Utilities
             InitializeComponent();
 
             Loaded += (s, e) =>
-             {
-                 Logger.Log(MessageType.Info, "Infomation message");
-                 Logger.Log(MessageType.Error, "Error message");
-                 Logger.Log(MessageType.Warning, "Warning message");
-             };
+            {
+                Logger.Log(MessageType.Info, "Infomation message");
+                Logger.Log(MessageType.Error, "Error message");
+                Logger.Log(MessageType.Warning, "Warning message");
+            };
         }
 
         private void OnClear_ButtonClick(object sender, RoutedEventArgs e)
@@ -46,6 +46,4 @@ namespace NidhogEditor.Utilities
             Logger.SetMessageFilter(filter);
         }
     }
-
-
 }

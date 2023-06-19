@@ -11,7 +11,7 @@ namespace NidhogEditor.Utilities
 {
     public static class Serializer
     {
-        public static void ToFile<T>(T instance,string path)
+        public static void ToFile<T>(T instance, string path)
         {
             try
             {
@@ -19,7 +19,7 @@ namespace NidhogEditor.Utilities
                 var serializer = new DataContractSerializer(typeof(T));
                 serializer.WriteObject(fs, instance);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
                 Logger.Log(MessageType.Error, $"Failed to serialize{instance}to{path}");
