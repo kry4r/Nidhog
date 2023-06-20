@@ -3,6 +3,9 @@
 #include "..\Platform\Platform.h"
 #include "..\Graphics\Renderer.h"
 
+#ifdef TEST_RENDERER
+
+
 using namespace nidhog;
 
 graphics::render_surface _surfaces[4];
@@ -84,3 +87,5 @@ void engine_test::shutdown()
 
     graphics::shutdown();
 }
+
+#endif // TEST_RENDERER

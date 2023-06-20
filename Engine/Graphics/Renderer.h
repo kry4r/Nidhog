@@ -23,4 +23,7 @@ namespace nidhog::graphics
 
     bool initialize(graphics_platform platform);
     void shutdown();
+
+    //‰÷»æ≥°æ∞
+    void render();
 }

@@ -1,6 +1,7 @@
 #include "Script.h"
 #include "Entity.h"
 
+
 namespace nidhog::script
 {
     namespace 

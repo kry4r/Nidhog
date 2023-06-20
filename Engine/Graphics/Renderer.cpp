@@ -36,4 +36,9 @@ namespace nidhog::graphics
 	{
 		gfx.shutdown();
 	}
+
+	void render()
+	{
+		gfx.render();
+	}
 }

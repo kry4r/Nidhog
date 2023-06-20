@@ -5,8 +5,181 @@ namespace nidhog::graphics::d3d12::core
 {
 	namespace
 	{
-		ID3D12Device8* main_device;
-		IDXGIFactory7* dxgi_factory{ nullptr };
+		class d3d12_command
+		{
+		public:
+			d3d12_command() = default; 
+			//禁止拷贝与移动构造
+			DISABLE_COPY_AND_MOVE(d3d12_command);
+			explicit d3d12_command(ID3D12Device8* const device, D3D12_COMMAND_LIST_TYPE type)
+			{
+				HRESULT hr{ S_OK };
+				D3D12_COMMAND_QUEUE_DESC desc{};
+				desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+				desc.NodeMask = 0;
+				desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+				desc.Type = type; //选择cmd list的种类
+
+				DXCall(hr = device->CreateCommandQueue(&desc, IID_PPV_ARGS(&_cmd_queue)));
+				if (FAILED(hr)) goto _error;
+				//为cmd_queue命名，取决于类型
+				NAME_D3D12_OBJECT(_cmd_queue,
+					type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
+					L"GFX Command Queue" :
+					type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
+					L"Compute Command Queue" : L"Command Queue");
+
+				for (u32 i{ 0 }; i < frame_buffer_count; ++i)
+				{
+					command_frame& frame{ _cmd_frames[i] };
+					DXCall(hr = device->CreateCommandAllocator(type, IID_PPV_ARGS(&frame.cmd_allocator)));
+					if (FAILED(hr)) goto _error;
+					//命名后添加索引
+					NAME_D3D12_OBJECT_INDEXED(frame.cmd_allocator, i,
+						type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
+						L"GFX Command Allocator" :
+						type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
+						L"Compute Command Allocator" : L"Command Allocator");
+				}
+
+
+				DXCall(hr = device->CreateCommandList(0, type, _cmd_frames[0].cmd_allocator, nullptr, IID_PPV_ARGS(&_cmd_list)));
+				if (FAILED(hr)) goto _error;
+				DXCall(_cmd_list->Close());
+				NAME_D3D12_OBJECT(_cmd_list,
+					type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
+					L"GFX Command List" :
+					type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
+					L"Compute Command List" : L"Command List");
+
+				//为fence创建实例并调用
+				DXCall(hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&_fence)));
+				if (FAILED(hr)) goto _error;
+				NAME_D3D12_OBJECT(_fence, L"D3D12 Fence");
+
+				//创建一个windows event
+				_fence_event = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
+				assert(_fence_event);
+
+				return;
+
+			_error:
+				release();
+			}
+
+			//析构函数，检查资源是否均释放
+			~d3d12_command()
+			{
+				assert(!_cmd_queue && !_cmd_list && !_fence);
+			}
+
+
+			// 等待当前帧发出信号并重置 command list/allocator.
+			void begin_frame()
+			{
+				//先通过索引确定在处理哪个帧
+				command_frame& frame{ _cmd_frames[_frame_index] };
+				frame.wait(_fence_event, _fence);
+				//之后重置这些
+				DXCall(frame.cmd_allocator->Reset());
+				//告诉其一个默认的pipeline state——》 
+				//能够告诉GPU应该使用什么资源以及shader
+				//此时为空
+				DXCall(_cmd_list->Reset(frame.cmd_allocator, nullptr));
+			}
+
+			// 用新的fence_value向fence1发出信号
+			void end_frame()
+			{
+				DXCall(_cmd_list->Close());
+				ID3D12CommandList *const cmd_lists[]{ _cmd_list };
+				_cmd_queue->ExecuteCommandLists(_countof(cmd_lists), &cmd_lists[0]);
+
+				//frame结束后，添加一个fence value到末尾
+				u64& fence_value{ _fence_value };
+				++fence_value;
+				command_frame& frame{ _cmd_frames[_frame_index] };
+				frame.fence_value = fence_value;
+				_cmd_queue->Signal(_fence, fence_value);
+
+				//帧结束时增加索引
+				_frame_index = (_frame_index + 1) % frame_buffer_count;
+			}
+
+			//等待GPU完成所有工作
+			void flush()
+			{
+				for (u32 i{ 0 }; i < frame_buffer_count; ++i)
+				{
+					_cmd_frames[i].wait(_fence_event, _fence);
+				}
+				_frame_index = 0;
+			}
+
+			void release()
+			{
+				flush();
+				core::release(_fence);
+				_fence_value = 0;
+
+				CloseHandle(_fence_event);
+				_fence_event = nullptr;
+
+				core::release(_cmd_queue);
+				core::release(_cmd_list);
+
+				for (u32 i{ 0 }; i < frame_buffer_count; ++i)
+				{
+					_cmd_frames[i].release();
+				}
+			}
+
+			//获取指向这三者的指针
+			constexpr ID3D12CommandQueue *const command_queue() const { return _cmd_queue; }
+			constexpr ID3D12GraphicsCommandList6 *const command_list() const { return _cmd_list; }
+			constexpr u32 frame_index() const { return _frame_index; }
+
+		private:
+
+			struct command_frame
+			{
+				ID3D12CommandAllocator* cmd_allocator{ nullptr };
+				u64                     fence_value{ 0 };
+
+				void wait(HANDLE fence_event, ID3D12Fence1* fence)
+				{
+					assert(fence && fence_event);
+					// 如果当前的fence值仍然小于“fence_value”
+					// 那么我们就知道 GPU 还没有完成命令列表的执行
+					// 因为它还没有到达“_cmd_queue->Signal()”命令
+					if (fence->GetCompletedValue() < fence_value)
+					{
+						// 我们让fence创建一个事件，当fence的当前值等于“fence_value”时发出信号
+						DXCall(fence->SetEventOnCompletion(fence_value, fence_event));
+						// 等到fence触发当前值达到“fence_value”的事件
+						// 表示命令队列执行完毕
+						WaitForSingleObject(fence_event, INFINITE);
+					}
+				}
+
+				void release()
+				{
+					core::release(cmd_allocator);
+				}
+			};
+
+			ID3D12CommandQueue* _cmd_queue{ nullptr };
+			ID3D12GraphicsCommandList6* _cmd_list{ nullptr };
+			ID3D12Fence1*               _fence{ nullptr };
+			u64                         _fence_value{ 0 };
+			command_frame               _cmd_frames[frame_buffer_count]{};//不会改变的常数
+			HANDLE                      _fence_event{ nullptr };
+			u32                         _frame_index{ 0 };
+		};
+
+		ID3D12Device8*				main_device;
+		IDXGIFactory7*				dxgi_factory{ nullptr };
+		d3d12_command               gfx_command;
 
 		//定义最低功能级别
 		constexpr D3D_FEATURE_LEVEL minimum_feature_level{ D3D_FEATURE_LEVEL_11_0 };
@@ -20,8 +193,8 @@ namespace nidhog::graphics::d3d12::core
 
 		// 获取支持最低功能级别的第一个性能最高的适配器。
 		// NOTE: 此函数可以在功能上进行扩展
-        // 例如，检查是否连接了任何输出设备
-        // 枚举支持的分辨率
+		// 例如，检查是否连接了任何输出设备
+		// 枚举支持的分辨率
 		// 为用户提供一种方法来选择在多适配器设置中使用哪个适配器等
 		// 详情见官方文档
 		IDXGIAdapter4* determine_main_adapter()
@@ -72,10 +245,10 @@ namespace nidhog::graphics::d3d12::core
 		// 确定支持的最大功能级别是什么
 		// create a ID3D12Device (this a virtual adapter).
 		// 创建一个 D3D12Device（显卡的虚拟表示）
-		 
+
 		if (main_device) shutdown();
 		u32 dxgi_factory_flags{ 0 };
-		
+
 #ifdef _DEBUG
 		// Enable debugging layer. Requires "Graphics Tools" optional feature
 		// 启用调试层。 需要“Graphics Tools”可选功能
@@ -86,11 +259,11 @@ namespace nidhog::graphics::d3d12::core
 			dxgi_factory_flags |= DXGI_CREATE_FACTORY_DEBUG;
 		}
 #endif // _DEBUG
-		
+
 		HRESULT hr{ S_OK };//检查错误代码
 		CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&dxgi_factory));
 		if (FAILED(hr)) return failed_init();
-		
+
 		// determine which adapter (i.e. graphics card) to use, if any
 		// 如果适配器太多，选择使用的适配器
 
@@ -101,9 +274,12 @@ namespace nidhog::graphics::d3d12::core
 		D3D_FEATURE_LEVEL max_feature_level{ get_max_feature_level(main_adapter.Get()) };
 		assert(max_feature_level >= minimum_feature_level);
 		if (max_feature_level < minimum_feature_level) return failed_init();
-	
+
 		DXCall(hr = D3D12CreateDevice(main_adapter.Get(), max_feature_level, IID_PPV_ARGS(&main_device)));
 		if (FAILED(hr)) return failed_init();
+
+		new (&gfx_command) d3d12_command(main_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+		if (!gfx_command.command_queue()) return failed_init();
 
 		NAME_D3D12_OBJECT(main_device, L"Main D3D12 Device");
 
@@ -120,11 +296,13 @@ namespace nidhog::graphics::d3d12::core
 #endif // _DEBUG
 
 		return true;
-	
+
 	}
 	void shutdown()
 	{
 		release(dxgi_factory);
+
+		gfx_command.release();
 
 #ifdef _DEBUG
 		{
@@ -145,5 +323,21 @@ namespace nidhog::graphics::d3d12::core
 #endif // _DEBUG
 
 		release(main_device);
+	}
+
+	void render()
+	{
+		// 等待 GPU 完成command allocator
+		// 在 GPU 完成后重置allocator
+		// 这将释放用于存储command的内存
+		gfx_command.begin_frame();
+		ID3D12GraphicsCommandList6* cmd_list{ gfx_command.command_list() };
+
+		// 记录命令
+		// ...
+		// 
+		// 完成记录commands. 现在执行 commands,
+		// 发出信号并增加下一帧的fence_value
+		gfx_command.end_frame();
 	}
 }
