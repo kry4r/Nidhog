@@ -14,4 +14,13 @@ namespace nidhog::graphics
         platform::window window{};
         surface surface{};
     };
+
+    //包括所有可用api
+    enum class graphics_platform :u32
+    {
+        direct3d12 = 0,
+    };
+
+    bool initialize(graphics_platform platform);
+    void shutdown();
 }

@@ -1,10 +1,13 @@
-﻿using NidhogEditor.ContentToolsAPIStructs;
+﻿using Microsoft.Win32;
+using NidhogEditor.ContentToolsAPIStructs;
 using NidhogEditor.DllWrapper;
 using NidhogEditor.Editors;
+using NidhogEditor.GameProject;
 using NidhogEditor.Utilities;
 using NidhogEditor.Utilities.Controls;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -65,8 +68,8 @@ namespace NidhogEditor.Content
                         info.SegmentX = (int)xSliderUvSphere.Value;
                         info.SegmentY = (int)ySliderUvSphere.Value;
                         info.Size.X = Value(xScalarBoxUvSphere, 0.001f);
-                        info.Size.Y = Value(xScalarBoxUvSphere, 0.001f);
-                        info.Size.Z = Value(xScalarBoxUvSphere, 0.001f);
+                        info.Size.Y = Value(yScalarBoxUvSphere, 0.001f);
+                        info.Size.Z = Value(zScalarBoxUvSphere, 0.001f);
                         smoothingAngle = (int)angleSliderUvSphere.Value;
                     }
                     break;
@@ -136,6 +139,23 @@ namespace NidhogEditor.Content
             foreach (var mesh in vm.MeshRenderer.Meshes)
             {
                 mesh.Diffuse = brush;
+            }
+        }
+
+        private void OnSave_Button_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new SaveFileDialog()
+            {
+                InitialDirectory = Project.Current.ContentPath,
+                Filter = "Asset file (*.asset)|*.asset"
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                Debug.Assert(!string.IsNullOrEmpty(dlg.FileName));
+                var asset = (DataContext as IAssetEditor).Asset;
+                Debug.Assert(asset != null);
+                asset.Save(dlg.FileName);
             }
         }
     }
