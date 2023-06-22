@@ -56,7 +56,7 @@ namespace nidhog::graphics::d3d12
 		std::unique_ptr<u32[]>              _free_handles{};
 
 		//可用于分配的位置的索引
-		std::vector<u32>                    _deferred_free_indices[frame_buffer_count]{};
+		utl::vector<u32>                    _deferred_free_indices[frame_buffer_count]{};
 		//互斥锁
 		std::mutex                          _mutex{};
 		u32                                 _capacity{ 0 };

@@ -2,6 +2,7 @@
 
 #include "CommonHeaders.h"
 #include "Graphics\Renderer.h"
+#include "Platform\Window.h"
 
 //d3d12特定头文件////////////////////////////////////
 #include <dxgi1_6.h>

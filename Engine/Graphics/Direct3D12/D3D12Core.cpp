@@ -1,5 +1,6 @@
 #include "D3D12Core.h"
 #include "D3D12Resources.h"
+#include "D3D12Surface.h"
 using namespace Microsoft::WRL;
 
 namespace nidhog::graphics::d3d12::core
@@ -182,6 +183,7 @@ namespace nidhog::graphics::d3d12::core
 		ID3D12Device8*				main_device;
 		IDXGIFactory7*				dxgi_factory{ nullptr };
 		d3d12_command               gfx_command;
+		utl::vector<d3d12_surface>  surfaces;
 
 		//定义heap种类
 		descriptor_heap             rtv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_RTV };
@@ -192,12 +194,13 @@ namespace nidhog::graphics::d3d12::core
 		//每个framebuffer添加指针，以便release
 		utl::vector<IUnknown*>      deferred_releases[frame_buffer_count]{};
 		u32                         deferred_releases_flag[frame_buffer_count]{};
-		std::mutex                  deferred_releases_mutx{};
+		std::mutex                  deferred_releases_mutex{};
 
 
 		//定义最低功能级别
 		constexpr D3D_FEATURE_LEVEL minimum_feature_level{ D3D_FEATURE_LEVEL_11_0 };
 
+		constexpr DXGI_FORMAT render_target_format{ DXGI_FORMAT_R8G8B8A8_UNORM_SRGB };
 		bool failed_init()
 		{
 			shutdown();
@@ -254,7 +257,7 @@ namespace nidhog::graphics::d3d12::core
 		void __declspec(noinline)
 			process_deferred_releases(u32 frame_idx)
 		{
-			std::lock_guard lock{ deferred_releases_mutx };
+			std::lock_guard lock{ deferred_releases_mutex };
 
 			// NOTE: 我们一开始就清除这个flag
 			//       如果我们最后清除它，那么它可能会覆盖其他我们尝试设置的线程
@@ -281,7 +284,7 @@ namespace nidhog::graphics::d3d12::core
 		void deferred_release(IUnknown* resource)
 		{
 			const u32 frame_idx{ current_frame_index() };
-			std::lock_guard lock{ deferred_releases_mutx };
+			std::lock_guard lock{ deferred_releases_mutex };
 			deferred_releases[frame_idx].push_back(resource);
 			set_deferred_releases_flag();
 		}
@@ -409,7 +412,57 @@ namespace nidhog::graphics::d3d12::core
 		release(main_device);
 	}
 
-	void render()
+	ID3D12Device *const device() { return main_device; }
+
+	descriptor_heap& rtv_heap() { return rtv_desc_heap; }
+
+	descriptor_heap& dsv_heap() { return dsv_desc_heap; }
+
+	descriptor_heap& srv_heap() { return srv_desc_heap; }
+
+	descriptor_heap& uav_heap() { return uav_desc_heap; }
+
+	DXGI_FORMAT default_render_target_format() { return render_target_format; }
+
+	u32 current_frame_index() { return gfx_command.frame_index(); }
+
+
+
+	void set_deferred_releases_flag() { deferred_releases_flag[current_frame_index()] = 1; }
+
+	surface create_surface(platform::window window)
+	{
+		surfaces.emplace_back(window);
+		surface_id id{ (u32)surfaces.size() - 1 };
+		surfaces[id].create_swap_chain(dxgi_factory, gfx_command.command_queue(), render_target_format);
+		return surface{ id };
+	}
+
+	void remove_surface(surface_id id)
+	{
+		gfx_command.flush();
+		// TODO: 使用适当的surface去除方法
+		surfaces[id].~d3d12_surface();
+	}
+
+	void resize_surface(surface_id id, u32, u32)
+	{
+		gfx_command.flush();
+		surfaces[id].resize();
+	}
+
+	u32	surface_width(surface_id id)
+	{
+		return surfaces[id].width();
+	}
+
+	u32 surface_height(surface_id id)
+	{
+		return surfaces[id].height();
+	}
+
+	void render_surface(surface_id id)
+
 	{
 		// 等待 GPU 完成command allocator
 		// 在 GPU 完成后重置allocator
@@ -423,6 +476,12 @@ namespace nidhog::graphics::d3d12::core
 		{
 			process_deferred_releases(frame_idx);
 		}
+
+		//引用我们需要渲染的surface
+		const d3d12_surface& surface{ surfaces[id] };
+
+		//  swap chain buffers 和frame buffers 同步进行
+		surface.present();
 		// 记录命令
 		// ...
 		// 
@@ -431,10 +490,5 @@ namespace nidhog::graphics::d3d12::core
 		gfx_command.end_frame();
 	}
 
-	ID3D12Device *const device() { return main_device; }
-
-	u32 current_frame_index() { return gfx_command.frame_index(); }
-
-	void set_deferred_releases_flag() { deferred_releases_flag[current_frame_index()] = 1; }
 
 }
