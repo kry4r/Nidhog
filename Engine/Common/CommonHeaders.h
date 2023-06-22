@@ -8,6 +8,7 @@
 #include <memory>
 #include <unordered_map>
 #include <string>
+#include <mutex>
 
 #if defined(_WIN64)
 #include<DirectXMath.h>

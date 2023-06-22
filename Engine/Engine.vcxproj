@@ -33,6 +33,7 @@
     <ClInclude Include="Graphics\Direct3D12\D3D12CommonHeaders.h" />
     <ClInclude Include="Graphics\Direct3D12\D3D12Core.h" />
     <ClInclude Include="Graphics\Direct3D12\D3D12Interface.h" />
+    <ClInclude Include="Graphics\Direct3D12\D3D12Resources.h" />
     <ClInclude Include="Graphics\GraphicsPlatformInterface.h" />
     <ClInclude Include="Graphics\Renderer.h" />
     <ClInclude Include="Platform\Platform.h" />
@@ -51,6 +52,7 @@
     <ClCompile Include="Core\Main.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12Core.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12Interface.cpp" />
+    <ClCompile Include="Graphics\Direct3D12\D3D12Resources.cpp" />
     <ClCompile Include="Graphics\Renderer.cpp" />
     <ClCompile Include="Platform\Platform.cpp" />
   </ItemGroup>
@@ -108,6 +110,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\net6.0-windows\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugEditor|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -115,9 +118,11 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\net6.0-windows\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseEditor|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\net6.0-windows\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

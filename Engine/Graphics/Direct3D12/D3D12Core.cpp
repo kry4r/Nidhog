@@ -1,4 +1,5 @@
 #include "D3D12Core.h"
+#include "D3D12Resources.h"
 using namespace Microsoft::WRL;
 
 namespace nidhog::graphics::d3d12::core
@@ -164,6 +165,7 @@ namespace nidhog::graphics::d3d12::core
 
 				void release()
 				{
+					fence_value = 0;
 					core::release(cmd_allocator);
 				}
 			};
@@ -180,6 +182,18 @@ namespace nidhog::graphics::d3d12::core
 		ID3D12Device8*				main_device;
 		IDXGIFactory7*				dxgi_factory{ nullptr };
 		d3d12_command               gfx_command;
+
+		//定义heap种类
+		descriptor_heap             rtv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_RTV };
+		descriptor_heap             dsv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_DSV };
+		descriptor_heap             srv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV };
+		descriptor_heap             uav_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV };
+
+		//每个framebuffer添加指针，以便release
+		utl::vector<IUnknown*>      deferred_releases[frame_buffer_count]{};
+		u32                         deferred_releases_flag[frame_buffer_count]{};
+		std::mutex                  deferred_releases_mutx{};
+
 
 		//定义最低功能级别
 		constexpr D3D_FEATURE_LEVEL minimum_feature_level{ D3D_FEATURE_LEVEL_11_0 };
@@ -237,7 +251,41 @@ namespace nidhog::graphics::d3d12::core
 			return feature_level_info.MaxSupportedFeatureLevel;
 		}
 
+		void __declspec(noinline)
+			process_deferred_releases(u32 frame_idx)
+		{
+			std::lock_guard lock{ deferred_releases_mutx };
+
+			// NOTE: 我们一开始就清除这个flag
+			//       如果我们最后清除它，那么它可能会覆盖其他我们尝试设置的线程
+			//       如果在处理项目之前发生覆盖那就还行
+			deferred_releases_flag[frame_idx] = 0;
+
+			rtv_desc_heap.process_deferred_free(frame_idx);
+			dsv_desc_heap.process_deferred_free(frame_idx);
+			srv_desc_heap.process_deferred_free(frame_idx);
+			uav_desc_heap.process_deferred_free(frame_idx);
+
+			//遍历资源并release
+			utl::vector<IUnknown*>& resources{ deferred_releases[frame_idx] };
+			if (!resources.empty())
+			{
+				for (auto& resource : resources) release(resource);
+				resources.clear();
+			}
+		}
+
 	}//匿名namespace
+
+	namespace detail {
+		void deferred_release(IUnknown* resource)
+		{
+			const u32 frame_idx{ current_frame_index() };
+			std::lock_guard lock{ deferred_releases_mutx };
+			deferred_releases[frame_idx].push_back(resource);
+			set_deferred_releases_flag();
+		}
+	} // detail namespace
 
 	bool initialize()
 	{
@@ -254,8 +302,15 @@ namespace nidhog::graphics::d3d12::core
 		// 启用调试层。 需要“Graphics Tools”可选功能
 		{
 			ComPtr<ID3D12Debug3> debug_interface;
-			DXCall(D3D12GetDebugInterface(IID_PPV_ARGS(&debug_interface)));
-			debug_interface->EnableDebugLayer();
+			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debug_interface))))
+			{
+				debug_interface->EnableDebugLayer();
+			}
+			else
+			{
+				OutputDebugStringA("Warning: D3D12 Debug interface is not available. Verify that Graphics Tools optional feature is installed on this system.\n");
+			}
+
 			dxgi_factory_flags |= DXGI_CREATE_FACTORY_DEBUG;
 		}
 #endif // _DEBUG
@@ -278,10 +333,6 @@ namespace nidhog::graphics::d3d12::core
 		DXCall(hr = D3D12CreateDevice(main_adapter.Get(), max_feature_level, IID_PPV_ARGS(&main_device)));
 		if (FAILED(hr)) return failed_init();
 
-		new (&gfx_command) d3d12_command(main_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
-		if (!gfx_command.command_queue()) return failed_init();
-
-		NAME_D3D12_OBJECT(main_device, L"Main D3D12 Device");
 
 #ifdef _DEBUG
 		{
@@ -295,12 +346,45 @@ namespace nidhog::graphics::d3d12::core
 		}
 #endif // _DEBUG
 
+		//一些heap的初始化
+		bool result{ true };
+		result &= rtv_desc_heap.initialize(512, false);
+		result &= dsv_desc_heap.initialize(512, false);
+		result &= srv_desc_heap.initialize(4096, true);
+		result &= uav_desc_heap.initialize(512, false);
+		if (!result) return failed_init();
+
+		new (&gfx_command) d3d12_command(main_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+		if (!gfx_command.command_queue()) return failed_init();
+
+		NAME_D3D12_OBJECT(main_device, L"Main D3D12 Device");
+		NAME_D3D12_OBJECT(rtv_desc_heap.heap(), L"RTV Descriptor Heap");
+		NAME_D3D12_OBJECT(dsv_desc_heap.heap(), L"DSV Descriptor Heap");
+		NAME_D3D12_OBJECT(srv_desc_heap.heap(), L"SRV Descriptor Heap");
+		NAME_D3D12_OBJECT(uav_desc_heap.heap(), L"UAV Descriptor Heap");
+
 		return true;
 
 	}
 	void shutdown()
 	{
+		// NOTE: 我们最后不会调用process_deferred_releases
+		// 因为某些资源（例如Swap chain）在其依赖资源被释放之前无法释放
+		for (u32 i{ 0 }; i < frame_buffer_count; ++i)
+		{
+			process_deferred_releases(i);
+		}
+
 		release(dxgi_factory);
+
+		rtv_desc_heap.release();
+		dsv_desc_heap.release();
+		srv_desc_heap.release();
+		uav_desc_heap.release();
+
+		// NOTE: 某些类型仅在shutdown/reset/clear期间对其资源使用延迟释放
+		//		 为了最终释放这些资源，我们再次调用 process_deferred_releases
+		process_deferred_releases(0);
 
 		gfx_command.release();
 
@@ -333,6 +417,12 @@ namespace nidhog::graphics::d3d12::core
 		gfx_command.begin_frame();
 		ID3D12GraphicsCommandList6* cmd_list{ gfx_command.command_list() };
 
+		//判断是否有flag，如果有就进行deferred_releases
+		const u32 frame_idx{ current_frame_index() };
+		if (deferred_releases_flag[frame_idx])
+		{
+			process_deferred_releases(frame_idx);
+		}
 		// 记录命令
 		// ...
 		// 
@@ -340,4 +430,11 @@ namespace nidhog::graphics::d3d12::core
 		// 发出信号并增加下一帧的fence_value
 		gfx_command.end_frame();
 	}
+
+	ID3D12Device *const device() { return main_device; }
+
+	u32 current_frame_index() { return gfx_command.frame_index(); }
+
+	void set_deferred_releases_flag() { deferred_releases_flag[current_frame_index()] = 1; }
+
 }
