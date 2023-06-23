@@ -18,40 +18,8 @@ namespace nidhog::platform {
         };
 
 
-        utl::vector<window_info> windows;
-        /////////////////////////////////////////////////////////////////
-        // TODO: 该部分稍后将由 a free-list container 处理
-
-        //当我们从windows数组中删除窗口时，记住哪些位置是空位
-        //方便我们之后利用
-        utl::vector<u32> available_slots;
-
-        //很简单的添加/删除逻辑
-        u32 add_to_windows(window_info info)
-        {
-            u32 id{ u32_invalid_id };
-            if (available_slots.empty())
-            {
-                id = (u32)windows.size();
-                windows.emplace_back(info);
-            }
-            else
-            {
-                id = available_slots.back();
-                available_slots.pop_back();
-                assert(id != u32_invalid_id);
-                windows[id] = info;
-            }
-            return id;
-        }
-
-        void remove_from_windows(u32 id)
-        {
-            assert(id < windows.size());
-            available_slots.emplace_back(id);
-        }
-
-        /////////////////////////////////////////////////////////////////
+        utl::free_list<window_info> windows;
+        
         window_info& get_from_id(window_id id)
         {
             assert(id < windows.size());
@@ -267,7 +235,7 @@ namespace nidhog::platform {
         {
             DEBUG_OP(SetLastError(0));
             //需要个函数来添加windowid
-            const window_id id{ add_to_windows(info) };
+            const window_id id{ windows.add(info) };
             SetWindowLongPtr(info.hwnd, GWLP_USERDATA, (LONG_PTR)id);
             // 在extra字节中设置指向窗口回调函数的指针
             // 用于处理窗口的消息
@@ -283,7 +251,7 @@ namespace nidhog::platform {
     {
         window_info& info{ get_from_id(id) };
         DestroyWindow(info.hwnd);
-        remove_from_windows(id);
+        windows.remove(id);
     }
 
 #else

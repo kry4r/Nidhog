@@ -23,6 +23,7 @@ namespace nidhog::graphics::d3d12
 		assert(factory && cmd_queue);
 		release();
 
+        //允许画面撕裂来提高帧率
         if (SUCCEEDED(factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &_allow_tearing, sizeof(u32))) && _allow_tearing)
         {
             _present_flags = DXGI_PRESENT_ALLOW_TEARING;

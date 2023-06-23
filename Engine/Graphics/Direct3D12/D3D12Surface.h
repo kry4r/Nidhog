@@ -39,7 +39,9 @@ namespace nidhog::graphics::d3d12
 
 			return *this;
 		}
-#endif
+#else
+		DISABLE_COPY_AND_MOVE(d3d12_surface);
+#endif // USE_STL_VECTOR
 
 		~d3d12_surface() { release(); }
 
@@ -109,6 +111,7 @@ namespace nidhog::graphics::d3d12
 		render_target_data  _render_target_data[frame_buffer_count]{};
 		platform::window    _window{};
 		mutable u32         _current_bb_index{ 0 };
+		//允许画面撕裂来提高帧率
 		u32                 _allow_tearing{ 0 };
 		u32                 _present_flags{ 0 };
 		//视口

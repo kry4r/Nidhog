@@ -1,7 +1,8 @@
 #pragma once
 
+
 //定义vector与deque
-#define USE_STL_VECTOR 1
+#define USE_STL_VECTOR 0
 #define USE_STL_DEQUE 1
 
 #if USE_STL_VECTOR
@@ -24,6 +25,19 @@ namespace nidhog::utl {
 		}
 	}
 }
+
+#else
+#include "Vector.h"
+
+namespace nidhog::utl {
+	template<typename T>
+	void erase_unordered(vector<T>& v, size_t index)
+	{
+		v.erase_unordered(index);
+	}
+}
+
+
 #endif
 
 #if USE_STL_DEQUE
@@ -40,3 +54,6 @@ namespace nidhog::utl {
 	// TODO: 实现自己的容器
 
 }
+
+
+#include "FreeList.h"
