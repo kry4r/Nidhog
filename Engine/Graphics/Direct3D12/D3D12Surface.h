@@ -7,6 +7,7 @@ namespace nidhog::graphics::d3d12
 	class d3d12_surface
 	{
 	public:
+		constexpr static u32 buffer_count{ 3 };
 		explicit d3d12_surface(platform::window window) : _window(window)
 		{
 			assert(_window.handle());
@@ -68,7 +69,7 @@ namespace nidhog::graphics::d3d12
 		constexpr void move(d3d12_surface& o)
 		{
 			_swap_chain = o._swap_chain;
-			for (u32 i{ 0 }; i < frame_buffer_count; ++i)
+			for (u32 i{ 0 }; i < buffer_count; ++i)
 			{
 				_render_target_data[i] = o._render_target_data[i];
 			}
@@ -85,7 +86,7 @@ namespace nidhog::graphics::d3d12
 		constexpr void reset()
 		{
 			_swap_chain = nullptr;
-			for (u32 i{ 0 }; i < frame_buffer_count; ++i)
+			for (u32 i{ 0 }; i < buffer_count; ++i)
 			{
 				_render_target_data[i] = {};
 			}
@@ -108,7 +109,7 @@ namespace nidhog::graphics::d3d12
 		//指向swap chain接口的指针
 		IDXGISwapChain4*    _swap_chain{ nullptr };
 		//用来储存render target
-		render_target_data  _render_target_data[frame_buffer_count]{};
+		render_target_data  _render_target_data[buffer_count]{};
 		platform::window    _window{};
 		mutable u32         _current_bb_index{ 0 };
 		//允许画面撕裂来提高帧率

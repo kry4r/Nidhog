@@ -32,7 +32,7 @@ namespace nidhog::graphics::d3d12
         //填写swap chain的 desc
         DXGI_SWAP_CHAIN_DESC1 desc{};
         desc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-        desc.BufferCount = frame_buffer_count;
+        desc.BufferCount = buffer_count;
         desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
         desc.Flags = _allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
         desc.Format = to_non_srgb(format);
@@ -56,7 +56,7 @@ namespace nidhog::graphics::d3d12
         _current_bb_index = _swap_chain->GetCurrentBackBufferIndex();
 
         //使用render target heap来分配back buffer
-        for (u32 i{ 0 }; i < frame_buffer_count; ++i)
+        for (u32 i{ 0 }; i < buffer_count; ++i)
         {
             _render_target_data[i].rtv = core::rtv_heap().allocate();
         }
@@ -80,7 +80,7 @@ namespace nidhog::graphics::d3d12
     void d3d12_surface::finalize()
     {
         // 为back buffer 创建Render Target View
-        for (u32 i{ 0 }; i < frame_buffer_count; ++i)
+        for (u32 i{ 0 }; i < buffer_count; ++i)
         {
             //获取其条目之一的引用
             render_target_data& data{ _render_target_data[i] };
@@ -114,7 +114,7 @@ namespace nidhog::graphics::d3d12
 
     void d3d12_surface::release()
     {
-        for (u32 i{ 0 }; i < frame_buffer_count; ++i)
+        for (u32 i{ 0 }; i < buffer_count; ++i)
         {
             //按顺序释放
             render_target_data& data{ _render_target_data[i] };
