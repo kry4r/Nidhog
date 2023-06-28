@@ -82,7 +82,7 @@ namespace nidhog::graphics::d3d12::d3dx {
         }
     };
 
-    // Maximum 64 DWORDs (u32's) divided up amongst all root parameters.
+    // Maximum 64 DWORDs (u32's) 由所有root parameters划分.
     // Root constants = 1 DWORD per 32-bit constant
     // Root descriptor  (CBV, SRV or UAV) = 2 DWORDs each
     // Descriptor table pointer = 1 DWORD

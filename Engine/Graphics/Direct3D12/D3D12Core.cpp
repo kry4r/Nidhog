@@ -605,7 +605,7 @@ namespace nidhog::graphics::d3d12::core
 		cmd_list->SetGraphicsRoot32BitConstant(0, frame_nr, 1);
 		cmd_list->SetGraphicsRootConstantBufferView(1, address_of_constant_buffer);
 		cmd_list->SetGraphicsRootDescriptorTable(2, srv_heap().gpu_start());
-		// ¼ÇÂ¼ reset of rendering commands...
+		// ¼ÇÂ¼ÆäÓàäÖÈ¾ÃüÁî
 #endif
 
 	// when renderer shuts down
