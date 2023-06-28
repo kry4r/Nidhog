@@ -34,7 +34,7 @@ namespace nidhog::graphics::d3d12::core
     }
 
     //ªÒ»°Main device
-    ID3D12Device *const device();
+    ID3D12Device8 *const device();
     
     descriptor_heap& rtv_heap();
     descriptor_heap& dsv_heap();

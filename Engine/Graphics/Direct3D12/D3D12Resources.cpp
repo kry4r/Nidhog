@@ -227,7 +227,7 @@ namespace nidhog::graphics::d3d12
             info.desc->Format = DXGI_FORMAT_R32_TYPELESS;
             srv_desc.Format = DXGI_FORMAT_R32_FLOAT;
         }
-
+        //ÃÓ–¥Ω·ππÃÂ
         srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
         srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
         srv_desc.Texture2D.MipLevels = 1;
