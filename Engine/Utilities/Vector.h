@@ -27,14 +27,6 @@ namespace nidhog::utl
             resize(count, value);
         }
 
-        template<typename it, typename = std::enable_if_t<std::_Is_iterator_v<it>>>
-        constexpr explicit vector(it first, it last)
-        {
-            for (; first != last; ++first)
-            {
-                emplace_back(*first);
-            }
-        }
 
         // 拷贝构造函数，通过复制另一个vector来构造
         // 所复制vector中的item必须是可复制的
@@ -45,7 +37,7 @@ namespace nidhog::utl
 
         // 移动构造函数，通过move另一个vector来构造
         // move后原vector将为空
-        constexpr vector(const vector&& o)
+        constexpr vector(vector&& o)
             : _capacity{ o._capacity }, _size{ o._size }, _data{ o._data }
         {
             o.reset();
@@ -117,7 +109,7 @@ namespace nidhog::utl
         // 调整vector的大小并使用默认值初始化新item。
         constexpr void resize(u64 new_size)
         {
-            static_assert(std::is_default_constructible_v<T>,
+            static_assert(std::is_default_constructible<T>::value,
                 "Type must be default-constructible.");
 
             if (new_size > _size)
@@ -144,7 +136,7 @@ namespace nidhog::utl
         // 调整vector的大小并使用copy"value"初始化新item。
         constexpr void resize(u64 new_size, const T& value)
         {
-            static_assert(std::is_copy_constructible_v<T>,
+            static_assert(std::is_copy_constructible<T>::value,
                 "Type must be copy-constructible.");
 
             if (new_size > _size)

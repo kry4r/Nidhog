@@ -17,7 +17,7 @@ namespace nidhog::graphics::d3d12
 	}//匿名namespace
 
 
-	void d3d12_surface::create_swap_chain(IDXGIFactory7* factory, ID3D12CommandQueue* cmd_queue, DXGI_FORMAT format)
+	void d3d12_surface::create_swap_chain(IDXGIFactory7* factory, ID3D12CommandQueue* cmd_queue, DXGI_FORMAT format/*= default_back_buffer_format*/)
 	{
 		//检查factory和queue是否包含有效指针
 		assert(factory && cmd_queue);
@@ -28,6 +28,7 @@ namespace nidhog::graphics::d3d12
         {
             _present_flags = DXGI_PRESENT_ALLOW_TEARING;
         }
+        _format = format;
 
         //填写swap chain的 desc
         DXGI_SWAP_CHAIN_DESC1 desc{};
@@ -89,7 +90,7 @@ namespace nidhog::graphics::d3d12
             DXCall(_swap_chain->GetBuffer(i, IID_PPV_ARGS(&data.resource)));
             //填充 rtv结构体
             D3D12_RENDER_TARGET_VIEW_DESC desc{};
-            desc.Format = core::default_render_target_format();
+            desc.Format = _format;
             desc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
             core::device()->CreateRenderTargetView(data.resource, &desc, data.rtv.cpu);
         }

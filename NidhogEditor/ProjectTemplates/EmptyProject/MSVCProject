@@ -106,7 +106,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(Nidhog_LibraryPath)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(Nidhog_LibraryPath)net6.0-windows</AdditionalLibraryDirectories>
       <AdditionalDependencies>Engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
 	  <ProgramDatabaseFile>$(OutDir)$(TargetName)-$([System.DateTime]::Now.ToString("HH_mm_ss_fff")).pdb</ProgramDatabaseFile>
     </Link>
@@ -125,7 +125,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(Nidhog_LibraryPath)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(Nidhog_LibraryPath)net6.0-windows</AdditionalLibraryDirectories>
       <AdditionalDependencies>Engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
 	  <ProgramDatabaseFile>$(OutDir)$(TargetName)-$([System.DateTime]::Now.ToString("HH_mm_ss_fff")).pdb</ProgramDatabaseFile>
     </Link>
@@ -148,7 +148,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(Nidhog_LibraryPath)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(Nidhog_LibraryPath)net6.0-windows</AdditionalLibraryDirectories>
       <AdditionalDependencies>Engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ProgramDatabaseFile>$(OutDir)$(TargetName)-$([System.DateTime]::Now.ToString("HH_mm_ss_fff")).pdb</ProgramDatabaseFile>
     </Link>
@@ -171,7 +171,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(Nidhog_LibraryPath)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(Nidhog_LibraryPath)net6.0-windows</AdditionalLibraryDirectories>
       <AdditionalDependencies>Engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
 	  <ProgramDatabaseFile>$(OutDir)$(TargetName)-$([System.DateTime]::Now.ToString("HH_mm_ss_fff")).pdb</ProgramDatabaseFile>
     </Link>

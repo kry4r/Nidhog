@@ -7,6 +7,7 @@ namespace nidhog::graphics::d3d12
 	class d3d12_surface
 	{
 	public:
+		constexpr static DXGI_FORMAT default_back_buffer_format{DXGI_FORMAT_R8G8B8A8_UNORM_SRGB};
 		constexpr static u32 buffer_count{ 3 };
 		explicit d3d12_surface(platform::window window) : _window(window)
 		{
@@ -47,7 +48,7 @@ namespace nidhog::graphics::d3d12
 		~d3d12_surface() { release(); }
 
 		//创建Swap chain
-		void create_swap_chain(IDXGIFactory7* factory, ID3D12CommandQueue* cmd_queue, DXGI_FORMAT format);
+		void create_swap_chain(IDXGIFactory7* factory, ID3D12CommandQueue* cmd_queue, DXGI_FORMAT format = default_back_buffer_format);
 		void present() const;
 		void resize();
 	
@@ -111,6 +112,7 @@ namespace nidhog::graphics::d3d12
 		//用来储存render target
 		render_target_data  _render_target_data[buffer_count]{};
 		platform::window    _window{};
+		DXGI_FORMAT         _format{ default_back_buffer_format };
 		mutable u32         _current_bb_index{ 0 };
 		//允许画面撕裂来提高帧率
 		u32                 _allow_tearing{ 0 };

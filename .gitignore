@@ -7,3 +7,6 @@ NidhogEditor/obj/
 Engine/x64/
 EngineDLL/x64/
 EngineTest/x64/
+packages/
+EngineTest/dxcompiler.dll
+EngineTest/dxil.dll

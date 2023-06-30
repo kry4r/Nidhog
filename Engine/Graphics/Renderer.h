@@ -43,4 +43,12 @@ namespace nidhog::graphics
 
     surface create_surface(platform::window window);
     void remove_surface(surface_id id);
+
+    // 获取已编译引擎着色器相对于可执行文件路径的位置。
+    // 该路径适用于当前使用的图形 API
+    const char* get_engine_shaders_path();
+
+    // 获取指定平台的已编译引擎着色器相对于可执行文件路径的位置
+    // 该路径适用于当前使用的图形 API
+    const char* get_engine_shaders_path(graphics_platform platform);
 }

@@ -2,6 +2,7 @@
 #include "..\Platform\PlatformTypes.h"
 #include "..\Platform\Platform.h"
 #include "..\Graphics\Renderer.h"
+#include "ShaderCompilation.h"
 
 #if TEST_RENDERER
 
@@ -78,9 +79,14 @@ void destroy_render_surface(graphics::render_surface& surface)
 
 bool engine_test::initialize()
 {
-    //指定图形API来初始化渲染器
-    bool result{ graphics::initialize(graphics::graphics_platform::direct3d12) };
-    if (!result) return result;
+    while (!compile_shaders())
+    {
+        // 弹出一个消息框，允许用户重试编译
+        if (MessageBox(nullptr, L"Failed to compile engine shaders.", L"Shader Compilation Error", MB_RETRYCANCEL) != IDRETRY)
+            return false;
+    }
+
+    if (!graphics::initialize(graphics::graphics_platform::direct3d12)) return false;
     platform::window_init_info info[]
     {
         {&win_proc, nullptr, L"Render window 1", 100 - 2000, 100 - 700, 400, 800},
@@ -94,7 +100,7 @@ bool engine_test::initialize()
         create_render_surface(_surfaces[i], info[i]);
 
 
-    return result;
+    return true;
 }
 
 void engine_test::run()
