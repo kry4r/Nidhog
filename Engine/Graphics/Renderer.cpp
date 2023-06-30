@@ -43,6 +43,15 @@ namespace nidhog::graphics
 		gfx.shutdown();
 	}
 
+	const char* get_engine_shaders_path()
+	{
+		return engine_shader_paths[(u32)gfx.platform];
+	}
+
+	const char* get_engine_shaders_path(graphics_platform platform)
+	{
+		return engine_shader_paths[(u32)platform];
+	}
 
 	surface create_surface(platform::window window)
 	{
@@ -79,13 +88,4 @@ namespace nidhog::graphics
 		return gfx.surface.render(_id);
 	}
 
-	const char* get_engine_shaders_path()
-	{
-		return engine_shader_paths[(u32)gfx.platform];
-	}
-	
-	const char* get_engine_shaders_path(graphics_platform platform)
-	{
-		return engine_shader_paths[(u32)platform];
-	}
 }

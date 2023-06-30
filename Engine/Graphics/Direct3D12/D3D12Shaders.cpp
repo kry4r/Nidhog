@@ -8,7 +8,7 @@ namespace nidhog::graphics::d3d12::shaders
         typedef struct compiled_shader
         {
             u64         size;
-            const u8* byte_code;
+            const u8*   byte_code;
         } const* compiled_shader_ptr;
 
         // 该数组中的每个元素都指向着色器 blob 内的偏移量

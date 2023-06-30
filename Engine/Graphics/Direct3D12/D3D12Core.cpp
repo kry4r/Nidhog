@@ -447,7 +447,7 @@ namespace nidhog::graphics::d3d12::core
 	surface create_surface(platform::window window)
 	{
 		surface_id id{ surfaces.add(window) };
-		surfaces[id].create_swap_chain(dxgi_factory, gfx_command.command_queue(), render_target_format);
+		surfaces[id].create_swap_chain(dxgi_factory, gfx_command.command_queue());
 		return surface{ id };
 	}
 

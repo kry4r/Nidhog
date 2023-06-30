@@ -10,8 +10,7 @@
 
 namespace {
     // TODO: maybe想要一个 IO utility .h/.lib 并将此函数移到其中
-    std::filesystem::path
-        set_current_directory_to_executable_path()
+    std::filesystem::path set_current_directory_to_executable_path()
     {
         // set the working directory to the executable path
         wchar_t path[MAX_PATH]{};

@@ -19,8 +19,7 @@
 #include <filesystem>
 
 // TODO: 复制!
-std::filesystem::path
-set_current_directory_to_executable_path()
+std::filesystem::path set_current_directory_to_executable_path()
 {
     // 将工作目录设置为可执行路径
     wchar_t path[MAX_PATH];
