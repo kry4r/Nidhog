@@ -74,3 +74,8 @@ if (swprintf_s(full_name, L"%s[%u]", name, n) >0 ){ \
 #else
 #define NAME_D3D12_OBJECT(x, name)
 #endif // _DEBUG
+
+
+
+#include "D3D12Helpers.h"
+#include "D3D12Resources.h"

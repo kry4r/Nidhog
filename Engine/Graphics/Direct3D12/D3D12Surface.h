@@ -1,6 +1,5 @@
 #pragma once
 #include "D3D12CommonHeaders.h"
-#include "D3D12Resources.h"
 
 namespace nidhog::graphics::d3d12
 {

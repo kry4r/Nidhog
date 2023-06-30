@@ -1,7 +1,6 @@
 #include "D3D12Core.h"
-#include "D3D12Resources.h"
 #include "D3D12Surface.h"
-#include "D3D12Helpers.h"
+#include "D3D12Shaders.h"
 using namespace Microsoft::WRL;
 
 namespace nidhog::graphics::d3d12::core
@@ -363,6 +362,9 @@ namespace nidhog::graphics::d3d12::core
 		new (&gfx_command) d3d12_command(main_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 		if (!gfx_command.command_queue()) return failed_init();
 
+		if (!shaders::initialize())
+			return failed_init();
+
 		NAME_D3D12_OBJECT(main_device, L"Main D3D12 Device");
 		NAME_D3D12_OBJECT(rtv_desc_heap.heap(), L"RTV Descriptor Heap");
 		NAME_D3D12_OBJECT(dsv_desc_heap.heap(), L"DSV Descriptor Heap");
@@ -381,8 +383,17 @@ namespace nidhog::graphics::d3d12::core
 		{
 			process_deferred_releases(i);
 		}
+		// shutdown modules
+		shaders::shutdown();
 
 		release(dxgi_factory);
+
+		// NOTE: 某些模块在关闭时会释放其description
+		//       We process those by calling process_deferred_free once more
+		rtv_desc_heap.process_deferred_free(0);
+		dsv_desc_heap.process_deferred_free(0);
+		srv_desc_heap.process_deferred_free(0);
+		uav_desc_heap.process_deferred_free(0);
 
 		rtv_desc_heap.release();
 		dsv_desc_heap.release();
