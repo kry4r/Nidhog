@@ -32,11 +32,10 @@ namespace nidhog::transform
             scales.emplace_back(info.scale);
         }
         //长度相同，所以我们可以用他们中的任意一个来生成id
-        return component(transform_id{ (id::id_type)positions.size() - 1 });
+        return component{ transform_id{ entity.get_id() } };
     }
 
-    void
-        remove(component c)
+    void remove([[maybe_unused]] component c)
     {
         assert(c.is_valid());
     }

@@ -3,6 +3,15 @@
 #include "D3D12CommonHeaders.h"
 #include "D3D12Resources.h"
 
+namespace nidhog::graphics::d3d12 {
+    struct d3d12_frame_info
+    {
+        u32 surface_width{};
+        u32 surface_height{};
+    };
+}
+
+
 namespace nidhog::graphics::d3d12::core 
 {
 

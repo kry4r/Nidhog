@@ -1,6 +1,9 @@
 #include "D3D12Core.h"
 #include "D3D12Surface.h"
 #include "D3D12Shaders.h"
+#include "D3D12GPass.h"
+
+
 using namespace Microsoft::WRL;
 
 namespace nidhog::graphics::d3d12::core
@@ -92,11 +95,14 @@ namespace nidhog::graphics::d3d12::core
 			}
 
 			// 用新的fence_value向fence1发出信号
-			void end_frame()
+			void end_frame(const d3d12_surface& surface)
 			{
 				DXCall(_cmd_list->Close());
 				ID3D12CommandList *const cmd_lists[]{ _cmd_list };
 				_cmd_queue->ExecuteCommandLists(_countof(cmd_lists), &cmd_lists[0]);
+
+				//  swap chain buffers 和frame buffers 同步进行
+				surface.present();
 
 				//frame结束后，添加一个fence value到末尾
 				u64& fence_value{ _fence_value };
@@ -172,7 +178,7 @@ namespace nidhog::graphics::d3d12::core
 				}
 			};
 
-			ID3D12CommandQueue* _cmd_queue{ nullptr };
+			ID3D12CommandQueue*			_cmd_queue{ nullptr };
 			id3d12_graphics_command_list* _cmd_list{ nullptr };
 			ID3D12Fence1*               _fence{ nullptr };
 			u64                         _fence_value{ 0 };
@@ -182,25 +188,26 @@ namespace nidhog::graphics::d3d12::core
 		};
 		using surface_collection = utl::free_list<d3d12_surface>;
 
-		id3d12_device*				main_device;
-		IDXGIFactory7*				dxgi_factory{ nullptr };
-		d3d12_command               gfx_command;
-		surface_collection			surfaces;
+		id3d12_device*					main_device;
+		IDXGIFactory7*					dxgi_factory{ nullptr };
+		d3d12_command					gfx_command;
+		surface_collection				surfaces;
+		d3dx::d3d12_resource_barrier    resource_barriers{};
 
 		//定义heap种类
-		descriptor_heap             rtv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_RTV };
-		descriptor_heap             dsv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_DSV };
-		descriptor_heap             srv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV };
-		descriptor_heap             uav_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV };
+		descriptor_heap					rtv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_RTV };
+		descriptor_heap					dsv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_DSV };
+		descriptor_heap					srv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV };
+		descriptor_heap					uav_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV };
 
 		//每个framebuffer添加指针，以便release
-		utl::vector<IUnknown*>      deferred_releases[frame_buffer_count]{};
-		u32                         deferred_releases_flag[frame_buffer_count]{};
-		std::mutex                  deferred_releases_mutex{};
+		utl::vector<IUnknown*>			deferred_releases[frame_buffer_count]{};
+		u32								deferred_releases_flag[frame_buffer_count]{};
+		std::mutex						deferred_releases_mutex{};
 
 
 		//定义最低功能级别
-		constexpr D3D_FEATURE_LEVEL minimum_feature_level{ D3D_FEATURE_LEVEL_11_0 };
+		constexpr D3D_FEATURE_LEVEL		minimum_feature_level{ D3D_FEATURE_LEVEL_11_0 };
 
 		constexpr DXGI_FORMAT render_target_format{ DXGI_FORMAT_R8G8B8A8_UNORM_SRGB };
 		bool failed_init()
@@ -362,7 +369,7 @@ namespace nidhog::graphics::d3d12::core
 		new (&gfx_command) d3d12_command(main_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 		if (!gfx_command.command_queue()) return failed_init();
 
-		if (!shaders::initialize())
+		if (!(shaders::initialize() && gpass::initialize()))
 			return failed_init();
 
 		NAME_D3D12_OBJECT(main_device, L"Main D3D12 Device");
@@ -384,6 +391,7 @@ namespace nidhog::graphics::d3d12::core
 			process_deferred_releases(i);
 		}
 		// shutdown modules
+		gpass::shutdown();
 		shaders::shutdown();
 
 		release(dxgi_factory);
@@ -491,15 +499,56 @@ namespace nidhog::graphics::d3d12::core
 
 		//引用我们需要渲染的surface
 		const d3d12_surface& surface{ surfaces[id] };
+		//借助barrier进行state转换
+		ID3D12Resource* const current_back_buffer{ surface.back_buffer() };
 
-		//  swap chain buffers 和frame buffers 同步进行
-		surface.present();
+		d3d12_frame_info frame_info
+		{
+			surface.width(),
+			surface.height()
+		};
+
+		gpass::set_size({ frame_info.surface_width, frame_info.surface_height });
+		d3dx::d3d12_resource_barrier& barriers{ resource_barriers };
 		// 记录命令
-		// ...
+		
+		cmd_list->RSSetViewports(1, &surface.viewport());
+		cmd_list->RSSetScissorRects(1, &surface.scissor_rect());
+
+		// Depth prepass
+		gpass::add_transitions_for_depth_prepass(barriers);
+		barriers.apply(cmd_list);
+		gpass::set_render_targets_for_depth_prepass(cmd_list);
+		gpass::depth_prepass(cmd_list, frame_info);
+
+		// Geometry and lighting pass
+		gpass::add_transitions_for_gpass(barriers);
+		barriers.apply(cmd_list);
+		gpass::set_render_targets_for_gpass(cmd_list);
+		gpass::render(cmd_list, frame_info);
+
+		d3dx::transition_resource(cmd_list, current_back_buffer,
+			D3D12_RESOURCE_STATE_PRESENT,
+			D3D12_RESOURCE_STATE_RENDER_TARGET);
+		// Post-process
+		gpass::add_transitions_for_post_process(barriers);
+		barriers.apply(cmd_list);
+		// Will write to the current back buffer, so back buffer is a render target
+
+		// after post process
+		// render target-> present
+		d3dx::transition_resource(cmd_list, current_back_buffer,
+			D3D12_RESOURCE_STATE_RENDER_TARGET,
+			D3D12_RESOURCE_STATE_PRESENT);
+
+		// Presenting swap chain buffers happens in lockstep with frame buffers.
+		// surface.present();
+
+
 		// 
 		// 完成记录commands. 现在执行 commands,
 		// 发出信号并增加下一帧的fence_value
-		gfx_command.end_frame();
+		gfx_command.end_frame(surface);
 	}
 
 	

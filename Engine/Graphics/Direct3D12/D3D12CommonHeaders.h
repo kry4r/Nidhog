@@ -4,6 +4,11 @@
 #include "Graphics\Renderer.h"
 #include "Platform\Window.h"
 
+
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif // !NOMINMAX
+
 //d3d12特定头文件////////////////////////////////////
 #include <dxgi1_6.h>
 #include <d3d12.h>
