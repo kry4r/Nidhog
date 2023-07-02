@@ -6,6 +6,13 @@ namespace nidhog::graphics::d3d12::gpass
 {
 	namespace
 	{
+        struct gpass_root_param_indices {
+            enum : u32 {
+                root_constants,
+
+                count
+            };
+        };
         constexpr DXGI_FORMAT           main_buffer_format{ DXGI_FORMAT_R16G16B16A16_FLOAT };
         constexpr DXGI_FORMAT           depth_buffer_format{ DXGI_FORMAT_D32_FLOAT };
         constexpr math::u32v2           initial_dimensions{ 100, 100 };
@@ -13,6 +20,7 @@ namespace nidhog::graphics::d3d12::gpass
         d3d12_render_texture            gpass_main_buffer{};
         d3d12_depth_buffer              gpass_depth_buffer{};
         math::u32v2                     dimensions{ initial_dimensions };
+        D3D12_RESOURCE_BARRIER_FLAGS    flags{};
 
         ID3D12RootSignature* gpass_root_sig{ nullptr };
         ID3D12PipelineState* gpass_pso{ nullptr };
@@ -69,6 +77,7 @@ namespace nidhog::graphics::d3d12::gpass
 
             NAME_D3D12_OBJECT(gpass_main_buffer.resource(), L"GPass Main Buffer");
             NAME_D3D12_OBJECT(gpass_depth_buffer.resource(), L"GPass Depth Buffer");
+            flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 
             return gpass_main_buffer.resource() && gpass_depth_buffer.resource();
         }
@@ -77,9 +86,10 @@ namespace nidhog::graphics::d3d12::gpass
             assert(!gpass_root_sig && !gpass_pso);
 
             // Create GPass root signature
-            d3dx::d3d12_root_parameter parameters[1]{};
-            parameters[0].as_constants(1, D3D12_SHADER_VISIBILITY_PIXEL, 1);
-            const d3dx::d3d12_root_signature_desc root_signature{ &parameters[0], _countof(parameters) };
+            using idx = gpass_root_param_indices;
+            d3dx::d3d12_root_parameter parameters[idx::count]{};
+            parameters[0].as_constants(3, D3D12_SHADER_VISIBILITY_PIXEL, 1);
+            const d3dx::d3d12_root_signature_desc root_signature{ &parameters[0],idx::count };
             gpass_root_sig = root_signature.create();
             assert(gpass_root_sig);
             NAME_D3D12_OBJECT(gpass_root_sig, L"GPass Root Signature");
@@ -125,6 +135,15 @@ namespace nidhog::graphics::d3d12::gpass
         core::release(gpass_pso);
     }
 
+    const d3d12_render_texture& main_buffer()
+    {
+        return gpass_main_buffer;
+    }
+    const d3d12_depth_buffer& depth_buffer()
+    {
+        return gpass_depth_buffer;
+    }
+
     void set_size(math::u32v2 size)
     {
         math::u32v2& d{ dimensions };
@@ -144,8 +163,13 @@ namespace nidhog::graphics::d3d12::gpass
         cmd_list->SetPipelineState(gpass_pso);
 
         static u32 frame{ 0 };
-        ++frame;
-        cmd_list->SetGraphicsRoot32BitConstant(0, frame, 0);
+        struct {
+            f32 width;
+            f32 height;
+            u32 frame;
+        } constants{ (f32)info.surface_width, (f32)info.surface_height, ++frame };
+        using idx = gpass_root_param_indices;
+        cmd_list->SetGraphicsRoot32BitConstants(idx::root_constants, 3, &constants, 0);
 
         cmd_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         cmd_list->DrawInstanced(3, 1, 0, 0);
@@ -156,14 +180,15 @@ namespace nidhog::graphics::d3d12::gpass
     {
         barriers.add(gpass_depth_buffer.resource(),
             D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-            D3D12_RESOURCE_STATE_DEPTH_WRITE);
+            D3D12_RESOURCE_STATE_DEPTH_WRITE, flags);
+
     }
 
     void add_transitions_for_gpass(d3dx::d3d12_resource_barrier& barriers)
     {
         barriers.add(gpass_main_buffer.resource(),
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-            D3D12_RESOURCE_STATE_RENDER_TARGET);
+            D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_BARRIER_FLAG_NONE);
         barriers.add(gpass_depth_buffer.resource(),
             D3D12_RESOURCE_STATE_DEPTH_WRITE,
             D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);

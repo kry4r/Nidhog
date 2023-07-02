@@ -27,6 +27,7 @@ namespace nidhog::graphics::d3d12::shaders
         {
             fullscreen_triangle_vs = 0,
             fill_color_ps = 1,
+            post_process = 2,
 
             count
         };

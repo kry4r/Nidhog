@@ -30,6 +30,7 @@ namespace
 	{
 		{"FullScreenTriangle.hlsl", "FullScreenTriangleVS", engine_shader::fullscreen_triangle_vs, shader_types::vertex},
 		{"FillColor.hlsl", "FillColorPS", engine_shader::fill_color_ps, shader_types::pixel},
+		{"PostProcess.hlsl", "PostProcessPS", engine_shader::post_process, shader_types::pixel},
 	};
 
 	static_assert(_countof(shader_files) == engine_shader::count);
@@ -70,9 +71,10 @@ namespace
 			if (FAILED(hr)) return nullptr;
 			assert(source_blob && source_blob->GetBufferSize());
 
-			std::wstring file{ to_wstring(info.file) };
-			std::wstring func{ to_wstring(info.function) };
-			std::wstring prof{ to_wstring(_profile_strings[(u32)info.type]) };
+			std::wstring file	{ to_wstring(info.file) };
+			std::wstring func	{ to_wstring(info.function) };
+			std::wstring prof	{ to_wstring(_profile_strings[(u32)info.type]) };
+			std::wstring inc	{ to_wstring(shaders_source_path) };
 
 			//为编译器提供编译器选项
 			LPCWSTR args[]
@@ -80,6 +82,7 @@ namespace
 				file.c_str(),                       // Optional shader source file name for error reporting
 				L"-E", func.c_str(),                // Entry function
 				L"-T", prof.c_str(),                // Target profile
+				L"-I", inc.c_str(),                 // Include path
 				DXC_ARG_ALL_RESOURCES_BOUND,
 	#if _DEBUG
 				DXC_ARG_DEBUG,
