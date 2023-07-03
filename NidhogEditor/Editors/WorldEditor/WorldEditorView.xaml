@@ -13,35 +13,55 @@
         <sys:Boolean x:Key="True">True</sys:Boolean>
         <sys:Boolean x:Key="False">False</sys:Boolean>
     </UserControl.Resources>
+    <UserControl.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.New" Executed="OnNewProject"/>
+        <CommandBinding Command="ApplicationCommands.Open" Executed="OnOpenProject"/>
+        <CommandBinding Command="ApplicationCommands.Close" Executed="OnEditorClose"/>
+    </UserControl.CommandBindings>
     <UserControl.InputBindings>
         <KeyBinding Command="{Binding UndoCommand}" Key="Z" Modifiers="Ctrl"/>
         <KeyBinding Command="{Binding RedoCommand}" Key="Z" Modifiers="Ctrl+Shift"/>
         <KeyBinding Command="{Binding SaveCommand}" Key="S" Modifiers="Ctrl"/>
-        <KeyBinding Command="{Binding BuildCommand}" CommandParameter="{StaticResource True}" Key="F7"/>
         <KeyBinding Command="{Binding DebugStartCommand}" Key="F5"/>
         <KeyBinding Command="{Binding DebugStartWithoutDebuggingCommand}" Key="F5" Modifiers="Ctrl"/>
         <KeyBinding Command="{Binding DebugStopCommand}" Key="F5" Modifiers="Shift"/>
+        <KeyBinding Command="{Binding BuildCommand}" CommandParameter="{StaticResource True}" Key="F7"/>
     </UserControl.InputBindings>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="32"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Horizontal">
-            <Button Content="撤销" Command="{Binding UndoCommand}"/>
-            <Button Content="重做" Command="{Binding RedoCommand}" Margin="5,0,0,0"/>
-            <Button Content="新建脚本" Click="OnNewScript_Button_Click" Margin="5,0,0,0"
-                    IsEnabled="{Binding Path=IsEnabled,ElementName=buildButton}"/>
-            <Button x:Name="buildButton" Content="生成" Margin="5,0,0,0"
+        <Menu Grid.Row="0">
+            <MenuItem Header="File">
+                <MenuItem Header="New Project..." Command="ApplicationCommands.New"/>
+                <MenuItem Header="Open Project..." Command="ApplicationCommands.Open"/>
+                <Separator/>
+                <MenuItem Header="Save Project" Command="{Binding SaveCommand}"/>
+                <Separator/>
+                <MenuItem Header="Exit" Command="ApplicationCommands.Close"/>
+            </MenuItem>
+            <MenuItem Header="Settings"></MenuItem>
+            <MenuItem Header="View"></MenuItem>
+            <MenuItem Header="Create" IsEnabled="False"></MenuItem>
+            <MenuItem Header="Window"></MenuItem>
+        </Menu>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="20,10">
+            <Button Content="Undo" Command="{Binding UndoCommand}"/>
+            <Button Content="Redo" Command="{Binding RedoCommand}" Margin="5,0"/>
+            <Button Content="New Script" Click="OnNewScript_Button_Click"
+                    IsEnabled="{Binding Path=IsEnabled, ElementName=buildButton}"/>
+            <Button x:Name="buildButton" Content="Build" Margin="5,0"
                     Command="{Binding BuildCommand}" CommandParameter="{StaticResource True}"/>
-            <ComboBox x:Name="runConfig" VerticalAlignment="Center" Width="72"
-                      SelectedIndex="{Binding BuildConfig}">
+            <ComboBox x:Name="runConfig" VerticalAlignment="Center"
+                      Width="72" SelectedIndex="{Binding BuildConfig}">
                 <ComboBoxItem Content="Debug"/>
                 <ComboBoxItem Content="Release"/>
             </ComboBox>
-            <Button Content="基本网格体" Click="OnCreatePrimitiveMesh_Button_Click" Margin="10,0"/>
+            <Button Content="Primitive mesh" Click="OnCreatePrimitiveMesh_Button_Click" Margin="10,0"/>
         </StackPanel>
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition Width="Auto"/>
@@ -95,7 +115,7 @@
                 </Grid.RowDefinitions>
                 <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch"
                           VerticalAlignment="Top" Background="Transparent"/>
-                <local:ProjectLayoutView Background="{StaticResource Editor.Window.GrayBrush3}"/>
+                <local:ProjectLayoutView  Background="{StaticResource Editor.Window.GrayBrush3}"/>
                 <local:GameEntityView Grid.Row="1" Background="{StaticResource Editor.Window.GrayBrush3}"
                                       Margin="0,5,0,0"/>
             </Grid>

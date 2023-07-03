@@ -21,6 +21,9 @@ namespace NidhogEditor.GameProject
     public partial class ProjectBrowsweDialg : Window
     {
         private readonly CubicEase _easing = new CubicEase() { EasingMode = EasingMode.EaseInOut };
+
+        public static bool GotoNewProjectTab { get; set; }
+
         private void AnimateToCreateProject()
         {
             var highlightAnimation = new DoubleAnimation(200, 400, new Duration(TimeSpan.FromSeconds(0.2)));
@@ -55,12 +58,16 @@ namespace NidhogEditor.GameProject
         private void OnProjectBrowsweDialogLoaded(object sender, RoutedEventArgs e)
         {
             Loaded -= OnProjectBrowsweDialogLoaded;
-            if (!OpenProject.Projects.Any())
+            if (!OpenProject.Projects.Any() || GotoNewProjectTab)
             {
-                openProjectButton.IsEnabled = false;
-                openProjectView.Visibility = Visibility.Hidden;
+                if (!GotoNewProjectTab)
+                {
+                    openProjectButton.IsEnabled = false;
+                    openProjectView.Visibility = Visibility.Hidden;
+                }
                 OnToggleButton_Click(createProjectButton, new RoutedEventArgs());
             }
+            GotoNewProjectTab = false;
         }
 
         private void OnToggleButton_Click(object sender, RoutedEventArgs e)

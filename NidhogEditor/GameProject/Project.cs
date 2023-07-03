@@ -21,14 +21,7 @@ namespace NidhogEditor.GameProject
     [DataContract(Name = "Game")]
     class Project : ViewModelBase
     {
-        public enum BuildConfiguration
-        {
-            Debug,
-            DebugEditor,
-            Release,
-            ReleaseEditor,
-        }
-        public static string Extension { get; } = ".nidhog";
+        public static string Extension => ".nidhog";
         [DataMember]
         public string Name { get; private set; } = "New Project";
         [DataMember]
@@ -39,7 +32,6 @@ namespace NidhogEditor.GameProject
 
         public string ContentPath => $@"{Path}Content\";
 
-        private static readonly string[] _buildConfigurationNames = new string[] { "Debug", "DebugEditor", "Release", "ReleaseEditor" };
 
         private int _buildConfig;
         [DataMember]
@@ -58,13 +50,13 @@ namespace NidhogEditor.GameProject
 
         public BuildConfiguration StandAloneBuildConfig => BuildConfig == 0 ? BuildConfiguration.Debug : BuildConfiguration.Release;
 
-        public BuildConfiguration DllBuildConfig => BuildConfig == 0 ? BuildConfiguration.DebugEditor : BuildConfiguration.ReleaseEditor;
+        public BuildConfiguration DLLBuildConfig => BuildConfig == 0 ? BuildConfiguration.DebugEditor : BuildConfiguration.ReleaseEditor;
 
         private string[] _availableScripts;
         public string[] AvailableScripts
         {
             get => _availableScripts;
-            set
+            private set
             {
                 if (_availableScripts != value)
                 {
@@ -74,8 +66,8 @@ namespace NidhogEditor.GameProject
             }
         }
 
-        [DataMember(Name = "Scenes")]
-        private ObservableCollection<Scene> _scenes = new ObservableCollection<Scene>();
+        [DataMember(Name = nameof(Scenes))]
+        private readonly ObservableCollection<Scene> _scenes = new ObservableCollection<Scene>();
         public ReadOnlyObservableCollection<Scene> Scenes { get; private set; }
 
         private Scene _activateScene;
@@ -92,7 +84,7 @@ namespace NidhogEditor.GameProject
             }
         }
 
-        public static Project Current => Application.Current.MainWindow.DataContext as Project;
+        public static Project Current => Application.Current.MainWindow?.DataContext as Project;
 
         public static UndoRedo UndoRedo { get; } = new UndoRedo();
         public ICommand AddSceneCommand { get; private set; }
@@ -137,7 +129,7 @@ namespace NidhogEditor.GameProject
             UndoCommand = new RelayCommand<object>(x => UndoRedo.Undo(), x => UndoRedo.UndoList.Any());
             RedoCommand = new RelayCommand<object>(x => UndoRedo.Redo(), x => UndoRedo.RedoList.Any());
             SaveCommand = new RelayCommand<object>(x => Save(this));
-            BuildCommand = new RelayCommand<bool>(async x => await BuildGameDll(x), x => !VisualStudio.IsDebugging() && VisualStudio.BuildDone);
+            BuildCommand = new RelayCommand<bool>(async x => await BuildGameDLL(x), x => !VisualStudio.IsDebugging() && VisualStudio.BuildDone);
             DebugStartCommand = new RelayCommand<object>(async x => await RunGame(true), x => !VisualStudio.IsDebugging() && VisualStudio.BuildDone);
             DebugStartWithoutDebuggingCommand = new RelayCommand<object>(async x => await RunGame(false), x => !VisualStudio.IsDebugging() && VisualStudio.BuildDone);
             DebugStopCommand = new RelayCommand<object>(async x => await StopGame(), x => VisualStudio.IsDebugging());
@@ -154,7 +146,7 @@ namespace NidhogEditor.GameProject
             OnPropertyChanged(nameof(DebugStopCommand));
         }
 
-        private static string GetConfigurationName(BuildConfiguration config) => _buildConfigurationNames[(int)config];
+
 
         private void AddScene(string sceneName)
         {
@@ -175,12 +167,13 @@ namespace NidhogEditor.GameProject
 
         public void Unload()
         {
-            UnloadGameDll();
+            UnloadGameDLL ();
             VisualStudio.CloseVisualStudio();
             UndoRedo.Reset();
+            Logger.Clear();
         }
 
-        public static void Save(Project project)
+        private static void Save(Project project)
         {
             Serializer.ToFile(project, project.FullPath);
             Logger.Log(MessageType.Info, $"Project saved to {project.FullPath}");
@@ -189,7 +182,7 @@ namespace NidhogEditor.GameProject
         //保存为二进制文件
         private void SaveToBinary()
         {
-            var configName = GetConfigurationName(StandAloneBuildConfig);
+            var configName = VisualStudio.GetConfigurationName(StandAloneBuildConfig);
             var bin = $@"{Path}x64\{configName}\game.bin";
 
             using (var bw = new BinaryWriter(File.Open(bin, FileMode.Create, FileAccess.Write)))
@@ -208,17 +201,17 @@ namespace NidhogEditor.GameProject
             }
         }
 
-        private async Task BuildGameDll(bool showWindow = true)
+        private async Task BuildGameDLL(bool showWindow = true)
         {
             try
             {
-                UnloadGameDll();
+                UnloadGameDLL();
                 //生成代码dll
-                await Task.Run(() => VisualStudio.BuildSolution(this, GetConfigurationName(DllBuildConfig), showWindow));
+                await Task.Run(() => VisualStudio.BuildSolution(this, DLLBuildConfig, showWindow));
                 //如果生成成功
                 if (VisualStudio.BuildSucceeded)
                 {
-                    LoadGameCodeDll();
+                    LoadGameCodeDLL();
                 }
             }
             catch (Exception ex)
@@ -227,7 +220,7 @@ namespace NidhogEditor.GameProject
                 throw;
             }
         }
-        private void UnloadGameDll()
+        private void UnloadGameDLL()
         {
             ActiveScene.GameEntities.Where(x => x.GetComponent<Script>() != null).ToList().ForEach(x => x.IsActive = false);
             if (EngineAPI.UnloadGameCodeDll() != 0)
@@ -237,9 +230,9 @@ namespace NidhogEditor.GameProject
             }
         }
 
-        private void LoadGameCodeDll()
+        private void LoadGameCodeDLL()
         {
-            var configName = GetConfigurationName(DllBuildConfig);
+            var configName = VisualStudio.GetConfigurationName(DLLBuildConfig);
             var dll = $@"{Path}x64\{configName}\{Name}.dll";
             AvailableScripts = null;
             if (File.Exists(dll) && EngineAPI.LoadGameCodeDll(dll) != 0)
@@ -257,12 +250,11 @@ namespace NidhogEditor.GameProject
         //运行游戏
         private async Task RunGame(bool debug)
         {
-            var configName = GetConfigurationName(StandAloneBuildConfig);
-            await Task.Run(() => VisualStudio.BuildSolution(this, configName, debug));
+            await Task.Run(() => VisualStudio.BuildSolution(this, StandAloneBuildConfig, debug));
             if (VisualStudio.BuildSucceeded)
             {
                 SaveToBinary();
-                await Task.Run(() => VisualStudio.Run(this, configName, debug));
+                await Task.Run(() => VisualStudio.Run(this, StandAloneBuildConfig, debug));
             }
         }
         //停止运行游戏
@@ -276,10 +268,10 @@ namespace NidhogEditor.GameProject
                 Scenes = new ReadOnlyObservableCollection<Scene>(_scenes);
                 OnPropertyChanged(nameof(Scenes));
             }
-            ActiveScene = Scenes.FirstOrDefault(x => x.IsActive);
+            ActiveScene = _scenes.FirstOrDefault(x => x.IsActive);
             Debug.Assert(ActiveScene != null);
 
-            await BuildGameDll(false);
+            await BuildGameDLL(false);
 
             SetCommands();
         }
@@ -289,6 +281,7 @@ namespace NidhogEditor.GameProject
             Name = name;
             Path = path;
 
+            Debug.Assert(File.Exists((Path + Name + Extension).ToLower()));
             OnDeserialized(new StreamingContext());
         }
     }

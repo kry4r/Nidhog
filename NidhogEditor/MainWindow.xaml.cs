@@ -33,8 +33,22 @@ namespace NidhogEditor
 
         private void OnMainwindowClosing(object sender, CancelEventArgs e)
         {
-            Closing -= OnMainwindowClosing;
-            Project.Current?.Unload();
+            if (DataContext == null)
+            {
+                e.Cancel = true;
+                Application.Current.MainWindow.Hide();
+                OpenProjectBrowserDialog();
+                if(DataContext != null)
+                {
+                    Application.Current.MainWindow.Show();
+                }
+            }
+            else
+            {
+                Closing -= OnMainwindowClosing;
+                Project.Current?.Unload();
+                DataContext = null;
+            }
         }
 
         private void OnMainwindowLoaded(object sender, RoutedEventArgs e)

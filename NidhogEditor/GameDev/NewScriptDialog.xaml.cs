@@ -16,6 +16,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using System.Text.RegularExpressions;
 
 namespace NidhogEditor.GameDev
 {
@@ -52,8 +53,9 @@ private:
 
         private static string GetNamespaceFromProjectName()
         {
-            var projectName = Project.Current.Name;
-            projectName = projectName.Replace(' ', '_');
+            var projectName = Project.Current.Name.Trim();
+            if (string.IsNullOrEmpty(projectName)) return string.Empty;
+            projectName = Regex.Replace(projectName, @"[^A-Za-z0-9_]", "");
             return projectName;
         }
 
@@ -63,12 +65,13 @@ private:
             var name = scriptName.Text.Trim();
             var path = scriptPath.Text.Trim();
             string errorMsg = string.Empty;
-            //一些检查
+            var nameRegex = new Regex(@"[^A-Za-z0-9_]");
+            //一些检查  
             if (string.IsNullOrEmpty(name))
             {
                 errorMsg = "Type in a script name.";
             }
-            else if (name.IndexOfAny(Path.GetInvalidFileNameChars()) != -1 || name.Any(x => char.IsWhiteSpace(x)))
+            else if (nameRegex.IsMatch(name))
             {
                 errorMsg = "Invalid character(s) used in script name.";
             }
