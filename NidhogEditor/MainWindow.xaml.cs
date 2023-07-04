@@ -1,7 +1,9 @@
-﻿using NidhogEditor.GameProject;
+﻿using NidhogEditor.Content;
+using NidhogEditor.GameProject;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -91,7 +93,10 @@ namespace NidhogEditor
             else
             {
                 Project.Current?.Unload();
-                DataContext = projectBrowser.DataContext;
+                var project = projectBrowser.DataContext as Project;
+                Debug.Assert(project != null);
+                AssetRegistry.Reset(project.ContentPath);
+                DataContext = project;
             }
         }
     }

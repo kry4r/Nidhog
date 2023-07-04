@@ -1,7 +1,7 @@
 #if INCLUDE_WINDOW_CPP
 #include "Window.h"
 
-namespace primal::platform {
+namespace nidhog::platform {
 
     void
         window::set_fullscreen(bool is_fullscreen) const

@@ -323,28 +323,26 @@ namespace nidhog::utl
         // 返回指向第一个item的指针. Returns null when vector is empty.
         [[nodiscard]] constexpr T* begin()
         {
-            assert(_data);
             return std::addressof(_data[0]);
         }
 
         // 返回指向第一个item的指针. Returns null when vector is empty.
         [[nodiscard]] constexpr const T* begin() const
         {
-            assert(_data);
             return std::addressof(_data[0]);
         }
 
         // 返回指向last item的指针. Returns null when vector is empty.
         [[nodiscard]] constexpr T* end()
         {
-            assert(_data);
+            assert(!(_data == nullptr && _size > 0));
             return std::addressof(_data[_size]);
         }
 
         // 返回指向last item的指针. Returns null when vector is empty.
         [[nodiscard]] constexpr const T* end() const
         {
-            assert(_data);
+            assert(!(_data == nullptr && _size > 0));
             return std::addressof(_data[_size]);
         }
 

@@ -10,6 +10,7 @@
     <BaseOutputPath>..\</BaseOutputPath>
   </PropertyGroup>
 
+
   <ItemGroup>
     <COMReference Include="EnvDTE80">
       <WrapperTool>tlbimp</WrapperTool>
@@ -34,11 +35,17 @@
   <ItemGroup>
     <Resource Include="Resources\PrimitiveMeshView\abc.png" />
     <Resource Include="Resources\PrimitiveMeshView\Checkermap.png" />
+	<Resource Include="Resources\ContentBrowser\FolderLarge.png" />
+	<Resource Include="Resources\ContentBrowser\FolderSmall.png" />
+	<Resource Include="Resources\ContentBrowser\ListView.png" />
+	<Resource Include="Resources\ContentBrowser\TileView.png" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.0" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.6.2115" />
   </ItemGroup>
+
+
 
 </Project>

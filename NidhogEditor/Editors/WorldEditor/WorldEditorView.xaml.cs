@@ -46,6 +46,7 @@ namespace NidhogEditor.Editors
             var dlg = new PrimitiveMeshDialog();
             dlg.ShowDialog();
         }
+
         private void OnNewProject(object sender, ExecutedRoutedEventArgs e)
         {
             ProjectBrowsweDialg.GotoNewProjectTab = true;
@@ -65,6 +66,6 @@ namespace NidhogEditor.Editors
         {
             Application.Current.MainWindow.Close();
         }
-
     }
 }
+
