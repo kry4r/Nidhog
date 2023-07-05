@@ -56,6 +56,8 @@ namespace NidhogEditor
             return false;
         }
 
+        public static bool IsDirectory(this FileInfo info) => info.Attributes.HasFlag(FileAttributes.Directory);
+
         public static bool IsOlder(this DateTime date, DateTime other) => date < other;
 
 
