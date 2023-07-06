@@ -291,7 +291,7 @@ namespace nidhog::tools
             memcpy(&buffer[at], data, s); at += s;
         }
 
-
+        //¸ù¾Ýmaterial²ð·Ömesh
         bool split_meshes_by_material(u32 material_idx, const mesh& m, mesh& submesh)
         {
             submesh.name = m.name;

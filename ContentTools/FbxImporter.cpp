@@ -33,7 +33,7 @@ namespace nidhog::tools {
         {
             return false;
         }
-
+        //Determine which parts to import
         FbxIOSettings* ios{ FbxIOSettings::Create(_fbx_manager, IOSROOT) };
         assert(ios);
         _fbx_manager->SetIOSettings(ios);
@@ -109,6 +109,7 @@ namespace nidhog::tools {
             if (fbx_mesh->RemoveBadPolygons() < 0) return;
 
             // Triangulate the mesh if needed.
+            // To control models's edge
             FbxGeometryConverter gc{ _fbx_manager };
             fbx_mesh = static_cast<FbxMesh*>(gc.Triangulate(fbx_mesh, true));
             if (!fbx_mesh || fbx_mesh->RemoveBadPolygons() < 0) return;
@@ -177,8 +178,8 @@ namespace nidhog::tools {
         for (s32 i{ 0 }; i < num_indices; ++i)
         {
             const u32 v_idx{ (u32)indices[i] };
-            // Did we encounter this vertex before? If so, just add its index.
-            // If not, add the vertex and a new index.
+            // 如果遇到过这个顶点，就只需要添加他的index
+            // 如果没遇到过就添加新的index（废话）
             if (vertex_ref[v_idx] != u32_invalid_id)
             {
                 m.raw_indices[i] = vertex_ref[v_idx];
@@ -194,7 +195,7 @@ namespace nidhog::tools {
 
         assert(m.raw_indices.size() % 3 == 0);
 
-        // Get material index per polygon
+        // 提取每个model的材质索引，以便我们之后按材质拆分mesh
         assert(num_polys > 0);
         FbxLayerElementArrayTemplate<s32>* mtl_indices;
         if (fbx_mesh->GetMaterialIndices(&mtl_indices))
