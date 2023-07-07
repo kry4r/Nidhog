@@ -13,12 +13,18 @@
     <Compile Update="Content\ContentBrowser\SaveDialog.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Editors\GeometryEditor\GeometryEditorView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Content\ContentBrowser\ContentBrowserView.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Content\ContentBrowser\SaveDialog.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Editors\GeometryEditor\GeometryEditorView.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="MainWindow.xaml">

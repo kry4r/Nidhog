@@ -8,6 +8,7 @@ using System.Windows.Media;
 using System.IO;
 using System.Security.Cryptography;
 using System.Diagnostics;
+using NidhogEditor.Content;
 
 namespace NidhogEditor
 {
@@ -84,6 +85,72 @@ namespace NidhogEditor
                 return sha256.ComputeHash(data, offset, count > 0 ? count : data.Length);
             }
             return null;
+        }
+
+        public static async Task ImportFilesAsync(string[] files, string destination)
+        {
+            try
+            {
+                Debug.Assert(!string.IsNullOrEmpty(destination));
+                ContentWatcher.EnableFileWatcher(false);
+                var tasks = files.Select(async file => await Task.Run(() => { Import(file, destination); }));
+                await Task.WhenAll(tasks);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to import files to {destination}");
+                Debug.WriteLine(ex.Message);
+            }
+            finally
+            {
+                ContentWatcher.EnableFileWatcher(true);
+            }
+        }
+
+        private static void Import(string file, string destination)
+        {
+            Debug.Assert(!string.IsNullOrEmpty(file));
+            if (IsDirectory(file)) return;
+            if (!destination.EndsWith(Path.DirectorySeparatorChar)) destination += Path.DirectorySeparatorChar;
+            var name = Path.GetFileNameWithoutExtension(file).ToLower();
+            var ext = Path.GetExtension(file).ToLower();
+
+            Asset asset = null;
+
+            switch (ext)
+            {
+                case ".fbx": asset = new Content.Geometry(); break;
+                case ".bmp": break;
+                case ".png": break;
+                case ".jpg": break;
+                case ".jpeg": break;
+                case ".tiff": break;
+                case ".tif": break;
+                case ".tga": break;
+                case ".wav": break;
+                case ".ogg": break;
+                default:
+                    break;
+            }
+
+            if (asset != null)
+            {
+                Import(asset, name, file, destination);
+            }
+        }
+
+        private static void Import(Asset asset, string name, string file, string destination)
+        {
+            Debug.Assert(asset != null);
+
+            asset.FullPath = destination + name + Asset.AssetFileExtension;
+            if (!string.IsNullOrEmpty(file))
+            {
+                asset.Import(file);
+            }
+
+            asset.Save(asset.FullPath);
+            return;
         }
     }
 }

@@ -5,6 +5,6 @@ namespace NidhogEditor.Editors
     internal interface IAssetEditor
     {
         Asset Asset { get; }
-        void SetAsset(Asset asset);
+        void SetAsset(AssetInfo asset);
     }
 }

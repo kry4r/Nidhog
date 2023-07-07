@@ -89,11 +89,13 @@ namespace nidhog::tools {
                     lod.name = lod.meshes[0].name;
                     _scene->lod_groups.emplace_back(lod);
                 }
-                else if (node->GetLodGroup())
-                {
-                    get_lod_group(node);
-                }
-
+            }
+            else if (node->GetLodGroup())
+            {
+                get_lod_group(node);
+            }
+            else
+            {
                 // 查看层次结构下方是否存在mesh。
                 get_scene(node);
             }
@@ -124,6 +126,8 @@ namespace nidhog::tools {
                 meshes.emplace_back(m);
             }
         }
+        // 查看层次结构下方是否存在mesh。
+        get_scene(node);
     }
 
     void fbx_context::get_lod_group(FbxNode* node)

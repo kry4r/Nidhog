@@ -31,15 +31,15 @@ namespace NidhogEditor.GameDev
 
 
         public static bool BuildSucceeded { get; private set; } = true;
-
         public static bool BuildDone { get; private set; } = true;
 
         public static string GetConfigurationName(BuildConfiguration config) => _buildConfigurationNames[(int)config];
 
-        [DllImport("ole32.dll")]    //binding context
+        //binding context
+        [DllImport("ole32.dll")]
         private static extern int CreateBindCtx(uint reserved, out IBindCtx ppbc);
 
-        [DllImport("ole32.dll")]    //在这个dll中，所以我们需要从这里面导入
+        [DllImport("ole32.dll")]
         private static extern int GetRunningObjectTable(uint reserved, out IRunningObjectTable pprot);
 
         private static void CallOnSTAThread(Action action)
@@ -63,9 +63,8 @@ namespace NidhogEditor.GameDev
             IRunningObjectTable rot = null;
             IEnumMoniker monikerTable = null;
             IBindCtx bindCtx = null;
-            try//有可能抛出异常，所以放在try中
+            try
             {
-                //检查vs是否打开
                 if (_vsInstance == null)
                 {
                     // 找到并打开vs
@@ -139,7 +138,7 @@ namespace NidhogEditor.GameDev
             lock (_lock) { OpenVisualStudio_Internal(solutionPath); }
         }
 
-        public static void CloseVisualStudio_Internal()
+        private static void CloseVisualStudio_Internal()
         {
             CallOnSTAThread(() =>
             {
@@ -152,6 +151,7 @@ namespace NidhogEditor.GameDev
                 _vsInstance = null;
             });
         }
+
         public static void CloseVisualStudio()
         {
             lock (_lock) { CloseVisualStudio_Internal(); }
@@ -206,6 +206,41 @@ namespace NidhogEditor.GameDev
             lock (_lock) { return AddFilesToSolution_Internal(solution, projectName, files); }
         }
 
+        private static void OnBuildSolutionBegin(string project, string projectConfig, string platform, string solutionConfig)
+        {
+            if (BuildDone) return;
+            Logger.Log(MessageType.Info, $"Building {project}, {projectConfig}, {platform}, {solutionConfig}");
+        }
+
+        private static void OnBuildSolutionDone(string project, string projectConfig, string platform, string solutionConfig, bool success)
+        {
+            if (BuildDone) return;
+
+            if (success) Logger.Log(MessageType.Info, $"Building {projectConfig} configuration succeeded");
+            else Logger.Log(MessageType.Error, $"Building {projectConfig} configuration failed");
+
+            BuildDone = true;
+            BuildSucceeded = success;
+            _resetEvent.Set();
+        }
+
+        private static bool IsDebugging_Internal()
+        {
+            bool result = false;
+            CallOnSTAThread(() =>
+            {
+                result = _vsInstance != null &&
+                    (_vsInstance.Debugger.CurrentProgram != null || _vsInstance.Debugger.CurrentMode == EnvDTE.dbgDebugMode.dbgRunMode);
+            });
+
+            return result;
+        }
+
+        public static bool IsDebugging()
+        {
+            lock (_lock) { return IsDebugging_Internal(); }
+        }
+
         private static void BuildSolution_Internal(Project project, BuildConfiguration buildConfig, bool showWindow)
         {
 
@@ -222,12 +257,12 @@ namespace NidhogEditor.GameDev
             {
                 if (!_vsInstance.Solution.IsOpen)
                     _vsInstance.Solution.Open(project.Solution);
-            
-
-                _vsInstance.MainWindow.Visible = showWindow;
-                _vsInstance.Events.BuildEvents.OnBuildProjConfigBegin += OnBuildSolutionBegin;
-                _vsInstance.Events.BuildEvents.OnBuildProjConfigDone += OnBuildSolutionDone;
             });
+
+            _vsInstance.MainWindow.Visible = showWindow;
+            _vsInstance.Events.BuildEvents.OnBuildProjConfigBegin += OnBuildSolutionBegin;
+            _vsInstance.Events.BuildEvents.OnBuildProjConfigDone += OnBuildSolutionDone;
+
             var configName = GetConfigurationName(buildConfig);
 
             try
@@ -254,40 +289,6 @@ namespace NidhogEditor.GameDev
         }
 
 
-        private static void OnBuildSolutionBegin(string project, string projectConfig, string platform, string solutionConfig)
-        {
-            if (BuildDone) return;
-            Logger.Log(MessageType.Info, $"Building {project}, {projectConfig}, {platform}, {solutionConfig}");
-        }
-
-        private static void OnBuildSolutionDone(string project, string projectConfig, string platform, string solutionConfig, bool success)
-        {
-            if (BuildDone) return;
-
-            if (success) Logger.Log(MessageType.Info, $"Building {projectConfig} configuration succeeded");
-            else Logger.Log(MessageType.Error, $"Building {projectConfig} configuration failed");
-
-            BuildDone = true;
-            BuildSucceeded = success;
-        }
-
-
-        private static bool IsDebugging_Internal()
-        {
-            bool result = false;
-            CallOnSTAThread(() =>
-            {
-                result = _vsInstance != null &&
-                    (_vsInstance.Debugger.CurrentProgram != null || _vsInstance.Debugger.CurrentMode == EnvDTE.dbgDebugMode.dbgRunMode);
-            });
-
-            return result;
-        }
-
-        public static bool IsDebugging()
-        {
-            lock (_lock) { return IsDebugging_Internal(); }
-        }
 
         //控制游戏运行
         private static void Run_Internal(Project project, BuildConfiguration buildConfig, bool debug)

@@ -6,7 +6,6 @@
         xmlns:local="clr-namespace:NidhogEditor.Content"
         mc:Ignorable="d" Foreground="{StaticResource Editor.FontBrush}"
         WindowStartupLocation="CenterScreen" UseLayoutRounding="True"
-        mc:Ignorable="d"
         Title="Save" Height="450" Width="800"
         Style="{StaticResource NidhogDialogStyle}">
     <Grid>
@@ -14,7 +13,7 @@
             <RowDefinition/>
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
-        <local:ContentBrowserView x:Name="contentBrowserView" SelectionMode="Single" FileAccess="Write"
+        <local:ContentBrowserView x:Name="contentBrowserView" SelectionMode="Single" FileAccess="Write" AllowDrop="False"
                                   MouseDoubleClick="OnContentBrowser_Mouse_DoubleClick"/>
 
         <Border Grid.Row="1" Background="{StaticResource Editor.Window.GrayBrush3}">

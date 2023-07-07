@@ -64,7 +64,8 @@ namespace NidhogEditor.Content
         public Guid Guid { get; protected set; } = Guid.NewGuid();
         public DateTime ImportDate { get; protected set; }
         public byte[] Hash { get; protected set; }
-
+        public abstract void Import(string file);
+        public abstract void Load(string file);
         public abstract IEnumerable<string> Save(string file);
 
 
@@ -89,6 +90,8 @@ namespace NidhogEditor.Content
             return info;
         }
 
+        public static AssetInfo TryGetAssetInfo(string file) =>
+            File.Exists(file) && Path.GetExtension(file) == AssetFileExtension ? AssetRegistry.GetAssetInfo(file) ?? GetAssetInfo(file) : null;
         public static AssetInfo GetAssetInfo(string file)
         {
             Debug.Assert(File.Exists(file) && Path.GetExtension(file) == AssetFileExtension);
@@ -148,7 +151,7 @@ namespace NidhogEditor.Content
         {
             Debug.Assert(type != AssetType.Unknown);
             Type = type;
-            }
         }
+    }
     
 }
