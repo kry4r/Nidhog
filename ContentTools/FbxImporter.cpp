@@ -79,90 +79,127 @@ namespace nidhog::tools {
         {
             FbxNode* node{ root->GetChild(i) };
             if (!node) continue;
-
-            if (node->GetMesh())
-            {
-                lod_group lod{};
-                get_mesh(node, lod.meshes);
-                if (lod.meshes.size())
-                {
-                    lod.name = lod.meshes[0].name;
-                    _scene->lod_groups.emplace_back(lod);
-                }
-            }
-            else if (node->GetLodGroup())
-            {
-                get_lod_group(node);
-            }
-            else
-            {
-                // 查看层次结构下方是否存在mesh。
-                get_scene(node);
-            }
-        }
-    }
-
-    void fbx_context::get_mesh(FbxNode* node, utl::vector<mesh>& meshes)
-    {
-        assert(node);
-
-        if (FbxMesh * fbx_mesh{ node->GetMesh() })
-        {
-            if (fbx_mesh->RemoveBadPolygons() < 0) return;
-
-            // Triangulate the mesh if needed.
-            // To control models's edge
-            FbxGeometryConverter gc{ _fbx_manager };
-            fbx_mesh = static_cast<FbxMesh*>(gc.Triangulate(fbx_mesh, true));
-            if (!fbx_mesh || fbx_mesh->RemoveBadPolygons() < 0) return;
-
-            mesh m;
-            m.lod_id = (u32)meshes.size();
-            m.lod_threshold = -1.f;
-            m.name = (node->GetName()[0] != '\0') ? node->GetName() : fbx_mesh->GetName();
-
-            if (get_mesh_data(fbx_mesh, m))
-            {
-                meshes.emplace_back(m);
-            }
-        }
-        // 查看层次结构下方是否存在mesh。
-        get_scene(node);
-    }
-
-    void fbx_context::get_lod_group(FbxNode* node)
-    {
-        assert(node);
-
-        if (FbxLODGroup * lod_grp{ node->GetLodGroup() })
-        {
+            //迭代所有child-node，获取每个节点LOD中的Hierarchies
             lod_group lod{};
-            lod.name = (node->GetName()[0] != '\0') ? node->GetName() : lod_grp->GetName();
-            // NOTE: number of LODs is exclusive the base mesh (LOD 0)
-            const s32 num_lods{ lod_grp->GetNumThresholds() };
-            const s32 num_nodes{ node->GetChildCount() };
-            assert(num_lods > 0 && num_nodes > 0);
-
-            for (s32 i{ 0 }; i < num_nodes; ++i)
+            get_meshes(node, lod.meshes, 0, -1.f);
+            if (lod.meshes.size())
             {
-                get_mesh(node->GetChild(i), lod.meshes);
-
-                if (lod.meshes.size() > 1 && lod.meshes.size() <= num_lods + 1 &&
-                    lod.meshes.back().lod_threshold < 0.f)
-                {
-                    FbxDistance threshold;
-                    lod_grp->GetThreshold((u32)lod.meshes.size() - 2, threshold);
-                    lod.meshes.back().lod_threshold = threshold.value() * _scene_scale;
-                }
+                lod.name = lod.meshes[0].name;
+                _scene->lod_groups.emplace_back(lod);
             }
-
-            if (lod.meshes.size()) _scene->lod_groups.emplace_back(lod);
         }
     }
+    //使用一个vector来储存
+    void fbx_context::get_meshes(FbxNode* node, utl::vector<mesh>& meshes, u32 lod_id, f32 lod_threshold)
+    {
+        assert(node && lod_id != u32_invalid_id);
+        bool is_lod_group{ false };
+
+        if (const s32 num_attributes{ node->GetNodeAttributeCount() })
+        {
+            for (s32 i{ 0 }; i < num_attributes; ++i)
+            {
+                FbxNodeAttribute* attribute{ node->GetNodeAttributeByIndex(i) };
+                const FbxNodeAttribute::EType attribute_type{ attribute->GetAttributeType() };
+                //检查Attribute，根据类型不同调用不用函数
+                if (attribute_type == FbxNodeAttribute::eMesh)
+                {
+                    get_mesh(attribute, meshes, lod_id, lod_threshold);
+                }
+                else if (attribute_type == FbxNodeAttribute::eLODGroup)
+                {
+                    get_lod_group(attribute);
+                    is_lod_group = true;
+                }
+            }
+        }
+
+        //我们假设mesh的属性，要么包含一个LOD attribute，要么包含mesh attribute
+        //如果不是LOD group的话，继续检查起子节点，寻找在Mesh中是否包含其他更多mesh（见结构定义）
+        if (!is_lod_group)
+        {
+            if (const s32 num_children{ node->GetChildCount() })
+            {
+                for (s32 i{ 0 }; i < num_children; ++i)
+                {
+                    get_meshes(node->GetChild(i), meshes, lod_id, lod_threshold);
+                }
+            }
+        }
+    }
+
+    //为获取mesh本身，我们还需传递LOD阈值 
+    //更改mesh函数，使用attribute
+    void fbx_context::get_mesh(FbxNodeAttribute* attribute, utl::vector<mesh>& meshes, u32 lod_id, f32 lod_threshold)
+    {
+        assert(attribute);
+
+        FbxMesh* fbx_mesh{ (FbxMesh*)attribute };
+        if (fbx_mesh->RemoveBadPolygons() < 0) return;
+
+        // Triangulate the mesh if needed.
+        FbxGeometryConverter gc{ _fbx_manager };
+        fbx_mesh = (FbxMesh*)gc.Triangulate(fbx_mesh, true);
+        if (!fbx_mesh || fbx_mesh->RemoveBadPolygons() < 0) return;
+
+        FbxNode* const node{ fbx_mesh->GetNode() };
+
+        mesh m;
+        m.lod_id = lod_id;
+        m.lod_threshold = lod_threshold;
+        m.name = (node->GetName()[0] != '\0') ? node->GetName() : fbx_mesh->GetName();
+
+        if (get_mesh_data(fbx_mesh, m))
+        {
+            meshes.emplace_back(m);
+        }
+    }
+
+
+    void fbx_context::get_lod_group(FbxNodeAttribute* attribute)
+    {
+        assert(attribute);
+
+        FbxLODGroup* lod_grp{ (FbxLODGroup*)attribute };
+        FbxNode* const node{ lod_grp->GetNode() };
+        lod_group lod{};
+        lod.name = (node->GetName()[0] != '\0') ? node->GetName() : lod_grp->GetName();
+        // NOTE: number of LODs is exclusive the base mesh (LOD 0)
+        const s32 num_nodes{ node->GetChildCount() };
+        assert(num_nodes > 0 && lod_grp->GetNumThresholds() == (num_nodes - 1));
+
+        for (s32 i{ 0 }; i < num_nodes; ++i)
+        {
+            f32 lod_threshold{ -1.f };
+            if (i > 0)
+            {
+                FbxDistance threshold;
+                lod_grp->GetThreshold(i - 1, threshold);
+                lod_threshold = threshold.value() * _scene_scale;
+            }
+            //现在只需要在子节点上调用get_meshes就可以获取属于这个分支的所有内容，变得更为简单
+            get_meshes(node->GetChild(i), lod.meshes, (u32)lod.meshes.size(), lod_threshold);
+        }
+
+        if (lod.meshes.size()) _scene->lod_groups.emplace_back(lod);
+    }
+
 
     bool fbx_context::get_mesh_data(FbxMesh* fbx_mesh, mesh& m)
     {
         assert(fbx_mesh);
+
+        //设定导入Transfrom变换组件
+        FbxNode* const node{ fbx_mesh->GetNode() };
+        FbxAMatrix geometricTransform;
+
+        geometricTransform.SetT(node->GetGeometricTranslation(FbxNode::eSourcePivot));
+        geometricTransform.SetR(node->GetGeometricRotation(FbxNode::eSourcePivot));
+        geometricTransform.SetS(node->GetGeometricScaling(FbxNode::eSourcePivot));
+
+        FbxAMatrix transform{ node->EvaluateGlobalTransform() * geometricTransform };
+        //转置矩阵，修复阴影错误
+        FbxAMatrix inverse_transpose{ transform.Inverse().Transpose() };
 
         const s32 num_polys{ fbx_mesh->GetPolygonCount() };
         if (num_polys <= 0) return false;
@@ -190,7 +227,7 @@ namespace nidhog::tools {
             }
             else
             {
-                FbxVector4 v = vertices[v_idx] * _scene_scale;
+                FbxVector4 v = transform.MultT(vertices[v_idx]) * _scene_scale;
                 m.raw_indices[i] = (u32)m.positions.size();
                 vertex_ref[v_idx] = m.raw_indices[i];
                 m.positions.emplace_back((f32)v[0], (f32)v[1], (f32)v[2]);
@@ -232,7 +269,9 @@ namespace nidhog::tools {
                 const s32 num_normals{ normals.Size() };
                 for (s32 i{ 0 }; i < num_normals; ++i)
                 {
-                    m.normals.emplace_back((f32)normals[i][0], (f32)normals[i][1], (f32)normals[i][2]);
+                    FbxVector4 n{ inverse_transpose.MultT(normals[i]) };
+                    n.Normalize();
+                    m.normals.emplace_back((f32)n[0], (f32)n[1], (f32)n[2]);
                 }
             }
             else
@@ -255,8 +294,13 @@ namespace nidhog::tools {
                 const s32 num_tangent{ tangents->GetCount() };
                 for (s32 i{ 0 }; i < num_tangent; ++i)
                 {
+                    // TODO: not sure if this transformation is correct.
                     FbxVector4 t{ tangents->GetAt(i) };
-                    m.tangents.emplace_back((f32)t[0], (f32)t[1], (f32)t[2], (f32)t[3]);
+                    const f32 handedness{ (f32)t[3] };
+                    t[3] = 0.0;
+                    t.Normalize();
+                    t = inverse_transpose.MultT(t);
+                    m.tangents.emplace_back((f32)t[0], (f32)t[1], (f32)t[2], handedness);
                 }
             }
             else

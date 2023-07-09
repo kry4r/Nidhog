@@ -11,10 +11,10 @@
   </PropertyGroup>
 
   
+	  
+  
 	
 	
-
-
   <ItemGroup>
     <COMReference Include="EnvDTE80">
       <WrapperTool>tlbimp</WrapperTool>
@@ -50,7 +50,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.6.2115" />
   </ItemGroup>
 
-
+  
 
 
 </Project>
