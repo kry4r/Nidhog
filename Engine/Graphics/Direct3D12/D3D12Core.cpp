@@ -3,6 +3,7 @@
 #include "D3D12Shaders.h"
 #include "D3D12GPass.h"
 #include "D3D12PostProcess.h"
+#include "D3D12Upload.h"
 
 using namespace Microsoft::WRL;
 
@@ -66,6 +67,7 @@ namespace nidhog::graphics::d3d12::core
 				//创建一个windows event
 				_fence_event = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
 				assert(_fence_event);
+				if (!_fence_event) goto _error;
 
 				return;
 
@@ -374,7 +376,7 @@ namespace nidhog::graphics::d3d12::core
 		new (&gfx_command) d3d12_command(main_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 		if (!gfx_command.command_queue()) return failed_init();
 
-		if (!(shaders::initialize() && gpass::initialize() && fx::initialize()))
+		if (!(shaders::initialize() && gpass::initialize() && fx::initialize() && upload::initialize()))
 			return failed_init();
 
 		NAME_D3D12_OBJECT(main_device, L"Main D3D12 Device");
@@ -397,6 +399,7 @@ namespace nidhog::graphics::d3d12::core
 			process_deferred_releases(i);
 		}
 		// shutdown modules
+		upload::shutdown();
 		fx::shutdown();
 		gpass::shutdown();
 		shaders::shutdown();

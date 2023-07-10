@@ -21,6 +21,7 @@ namespace nidhog::utl {
         template<typename T>
         [[nodiscard]] T read()
         {
+            static_assert(std::is_arithmetic_v<T>, "Template argument should be a primitve type.");
             T value{ *((T*)_position) };
             _position += sizeof(T);
             return value;
@@ -63,6 +64,8 @@ namespace nidhog::utl {
         template<typename T>
         void write(T value)
         {
+            //对type做出一定限制
+            static_assert(std::is_arithmetic_v<T>, "Template argument should be a primitve type.");
             assert(&_position[sizeof(T)] <= &_buffer[_buffer_size]);
             *((T*)_position) = value;
             _position += sizeof(T);
