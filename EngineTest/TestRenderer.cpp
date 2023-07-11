@@ -1,13 +1,60 @@
 #include "TestRenderer.h"
+#include "..\Graphics\Direct3D12\D3D12Core.h"
+#include "..\Content\ContentToEngine.h"
 #include "..\Platform\PlatformTypes.h"
 #include "..\Platform\Platform.h"
 #include "..\Graphics\Renderer.h"
 #include "ShaderCompilation.h"
 
+#include <filesystem>
+#include <fstream>
+
 #if TEST_RENDERER
 
 
 using namespace nidhog;
+
+/////////////////////////////////// Multithreading test worker spawn code ////////////////////////////////////////////
+#define ENABLE_TEST_WORKERS 0
+
+constexpr u32 num_threads{ 8 };
+bool          shut_down{ false };
+std::thread   workers[num_threads];
+
+utl::vector<u8> buffer(1024 * 1024, 0);
+// Test worker for upload context
+void buffer_test_worker()
+{
+    while (!shut_down)
+    {
+        auto* resource = graphics::d3d12::d3dx::create_buffer(buffer.data(), (u32)buffer.size());
+        // NOTE: We can also use core::release(resource) since we're not using the buffer for rendering.
+        //       However, this is a nice test for deferred_release functionality.
+        graphics::d3d12::core::deferred_release(resource);
+    }
+}
+
+template<class FnPtr, class... Args>
+void init_test_workers(FnPtr&& fnPtr, Args&&... args)
+{
+#if ENABLE_TEST_WORKERS
+    shutdown = false;
+    for (auto& w : workers)
+        w = std::thread(std::forward<FnPtr>(fnPtr), std::forward<Args>(args)...);
+#endif
+}
+
+void joint_test_workers()
+{
+#if ENABLE_TEST_WORKERS
+    shutdown = true;
+    for (auto& w : workers) w.join();
+#endif
+}
+////////////////////////////////Multithreading test worker spawn code/////////////////////////////////////////
+
+id::id_type model_id{ id::invalid_id };
+
 
 graphics::render_surface _surfaces[4];
 
@@ -103,6 +150,26 @@ LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
+bool read_file(std::filesystem::path path, std::unique_ptr<u8[]>& data, u64& size)
+{
+    if (!std::filesystem::exists(path)) return false;
+
+    size = std::filesystem::file_size(path);
+    assert(size);
+    if (!size) return false;
+    data = std::make_unique<u8[]>(size);
+    std::ifstream file{ path, std::ios::in | std::ios::binary };
+    if (!file || !file.read((char*)data.get(), size))
+    {
+        file.close();
+        return false;
+    }
+
+    file.close();
+    return true;
+}
+
+
 void create_render_surface(graphics::render_surface& surface, platform::window_init_info info)
 {
     surface.window = platform::create_window(&info);
@@ -140,6 +207,17 @@ bool test_initalize()
     for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
         create_render_surface(_surfaces[i], info[i]);
 
+    
+    // load test model
+    std::unique_ptr<u8[]> model;
+    u64 size{ 0 };
+    if (!read_file("D:\\Nidhog\\EngineTest\\model.model", model, size)) return false;
+
+    model_id = content::create_resource(model.get(), content::asset_type::mesh);
+    if (!id::is_valid(model_id)) return false;
+
+    init_test_workers(buffer_test_worker);
+    
     is_restarting = false;
     return true;
 }
@@ -172,6 +250,12 @@ void engine_test::run()
 
 void engine_test::shutdown()
 {
+    joint_test_workers();
+
+    if (id::is_valid(model_id))
+    {
+        content::destroy_resource(model_id, content::asset_type::mesh);
+    }
     test_shutdown();
 }
 

@@ -91,6 +91,8 @@ namespace nidhog::graphics::d3d12::upload
 
     d3d12_upload_context::d3d12_upload_context(u32 aligned_size)
     {
+        //只能在初始化队列时使用
+         assert(upload_cmd_queue);
         {
             // We don't want to lock this function for longer than necessary. 
             // So, we scope this lock.

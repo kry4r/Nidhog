@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,6 +26,24 @@ namespace NidhogEditor.Utilities
         {
             if (!value.HasValue || !other.HasValue) return false;
             return Math.Abs(value.Value - other.Value) < Epsilon;
+        }
+
+        // Align by rounding up. Will result in a multiple of 'alignment' that is greater than or equal to 'size'.
+        public static long AlignSizeUp(long size, long alignment)
+        {
+            Debug.Assert(alignment > 0, "Alignment must be non-zero.");
+            long mask = alignment - 1;
+            Debug.Assert((alignment & mask) == 0, "Alignment should be a power of 2.");
+            return ((size + mask) & ~mask);
+        }
+
+        // Align by rounding down. Will result in a multiple of 'alignment' that is less than or equal to 'size'.
+        public static long AlignSizeDown(long size, long alignment)
+        {
+            Debug.Assert(alignment > 0, "Alignment must be non-zero.");
+            long mask = alignment - 1;
+            Debug.Assert((alignment & mask) == 0, "Alignment should be a power of 2.");
+            return (size & ~mask);
         }
     }
     public class DelayEventTimerArgs : EventArgs
