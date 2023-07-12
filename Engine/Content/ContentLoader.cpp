@@ -1,7 +1,7 @@
 #include "ContentLoader.h"
-#include "..\Components\Entity.h"
-#include "..\Components\Transform.h"
-#include "..\Components\Script.h"
+#include "Components/Entity.h"
+#include "Components/Transform.h"
+#include "Components/Script.h"
 #include "Graphics\Renderer.h"
 
 

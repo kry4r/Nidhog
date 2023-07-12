@@ -36,23 +36,23 @@ namespace nidhog::graphics::d3d12::core
     {
         if (resource)
         {
-            //将指针添加到数组，之后再进行release
+            //灏嗘寚閽堟坊鍔犲埌鏁扮粍锛屼箣鍚庡啀杩涜release
             detail::deferred_release(resource);
             resource = nullptr;
         }
     }
 
-    //获取Main device
+    //鑾峰彇Main device
     id3d12_device *const device();
     
-    descriptor_heap& rtv_heap();
-    descriptor_heap& dsv_heap();
-    descriptor_heap& srv_heap();
-    descriptor_heap& uav_heap();
+    descriptor_heap& rtv_heap();    //Render Target View
+    descriptor_heap& dsv_heap();    //deapth VIew
+    descriptor_heap& srv_heap();    //shader resource View
+    descriptor_heap& uav_heap();    //unordered access View
     u32 current_frame_index();
     void set_deferred_releases_flag();
 
-    //一些surface相关函数
+    //涓�浜泂urface鐩稿叧鍑芥暟
     surface create_surface(platform::window window);
     void remove_surface(surface_id id);
     void resize_surface(surface_id id, u32, u32);

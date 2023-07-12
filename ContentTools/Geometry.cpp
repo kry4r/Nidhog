@@ -1,5 +1,5 @@
 #include "Geometry.h"
-#include "..\Utilities\IOStream.h"
+#include "Utilities/IOStream.h"
 
 namespace nidhog::tools
 {

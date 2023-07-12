@@ -10,3 +10,4 @@ EngineTest/x64/
 packages/
 EngineTest/dxcompiler.dll
 EngineTest/dxil.dll
+EngineTest/model.model

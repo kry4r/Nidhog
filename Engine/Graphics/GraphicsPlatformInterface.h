@@ -4,7 +4,6 @@
 
 #include "CommonHeaders.h"
 #include "Renderer.h"
-#include "Platform\Window.h"
 
 namespace nidhog::graphics
 {
@@ -24,6 +23,15 @@ namespace nidhog::graphics
 			u32(*height)(surface_id);
 			void(*render)(surface_id);
 		} surface;
+
+		struct 
+		{
+			camera(*create)(camera_init_info);
+			void(*remove)(camera_id);
+			//根据我们定义的参数不同，实现set和get相应Parameter
+			void(*set_parameter)(camera_id, camera_parameter::parameter, const void* const, u32);
+			void(*get_parameter)(camera_id, camera_parameter::parameter, void* const, u32);
+		} camera;
 
 
 		struct 

@@ -16,7 +16,7 @@ namespace nidhog::graphics::d3d12::core
 		{
 		public:
 			d3d12_command() = default; 
-			//½ûÖ¹¿½±´ÓëÒÆ¶¯¹¹Ôì
+			//ç¦æ­¢æ‹·è´ä¸ç§»åŠ¨æ„é€ 
 			DISABLE_COPY_AND_MOVE(d3d12_command);
 			explicit d3d12_command(id3d12_device* const device, D3D12_COMMAND_LIST_TYPE type)
 			{
@@ -25,11 +25,11 @@ namespace nidhog::graphics::d3d12::core
 				desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 				desc.NodeMask = 0;
 				desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
-				desc.Type = type; //Ñ¡Ôñcmd listµÄÖÖÀà
+				desc.Type = type; //é€‰æ‹©cmd listçš„ç§ç±»
 
 				DXCall(hr = device->CreateCommandQueue(&desc, IID_PPV_ARGS(&_cmd_queue)));
 				if (FAILED(hr)) goto _error;
-				//Îªcmd_queueÃüÃû£¬È¡¾öÓÚÀàĞÍ
+				//ä¸ºcmd_queueå‘½åï¼Œå–å†³äºç±»å‹
 				NAME_D3D12_OBJECT(_cmd_queue,
 					type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
 					L"GFX Command Queue" :
@@ -41,7 +41,7 @@ namespace nidhog::graphics::d3d12::core
 					command_frame& frame{ _cmd_frames[i] };
 					DXCall(hr = device->CreateCommandAllocator(type, IID_PPV_ARGS(&frame.cmd_allocator)));
 					if (FAILED(hr)) goto _error;
-					//ÃüÃûºóÌí¼ÓË÷Òı
+					//å‘½ååæ·»åŠ ç´¢å¼•
 					NAME_D3D12_OBJECT_INDEXED(frame.cmd_allocator, i,
 						type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
 						L"GFX Command Allocator" :
@@ -59,12 +59,12 @@ namespace nidhog::graphics::d3d12::core
 					type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
 					L"Compute Command List" : L"Command List");
 
-				//Îªfence´´½¨ÊµÀı²¢µ÷ÓÃ
+				//ä¸ºfenceåˆ›å»ºå®ä¾‹å¹¶è°ƒç”¨
 				DXCall(hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&_fence)));
 				if (FAILED(hr)) goto _error;
 				NAME_D3D12_OBJECT(_fence, L"D3D12 Fence");
 
-				//´´½¨Ò»¸öwindows event
+				//åˆ›å»ºä¸€ä¸ªwindows event
 				_fence_event = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
 				assert(_fence_event);
 				if (!_fence_event) goto _error;
@@ -75,49 +75,49 @@ namespace nidhog::graphics::d3d12::core
 				release();
 			}
 
-			//Îö¹¹º¯Êı£¬¼ì²é×ÊÔ´ÊÇ·ñ¾ùÊÍ·Å
+			//ææ„å‡½æ•°ï¼Œæ£€æŸ¥èµ„æºæ˜¯å¦å‡é‡Šæ”¾
 			~d3d12_command()
 			{
 				assert(!_cmd_queue && !_cmd_list && !_fence);
 			}
 
 
-			// µÈ´ıµ±Ç°Ö¡·¢³öĞÅºÅ²¢ÖØÖÃ command list/allocator.
+			// ç­‰å¾…å½“å‰å¸§å‘å‡ºä¿¡å·å¹¶é‡ç½® command list/allocator.
 			void begin_frame()
 			{
-				//ÏÈÍ¨¹ıË÷ÒıÈ·¶¨ÔÚ´¦ÀíÄÄ¸öÖ¡
+				//å…ˆé€šè¿‡ç´¢å¼•ç¡®å®šåœ¨å¤„ç†å“ªä¸ªå¸§
 				command_frame& frame{ _cmd_frames[_frame_index] };
 				frame.wait(_fence_event, _fence);
-				//Ö®ºóÖØÖÃÕâĞ©
+				//ä¹‹åé‡ç½®è¿™äº›
 				DXCall(frame.cmd_allocator->Reset());
-				//¸æËßÆäÒ»¸öÄ¬ÈÏµÄpipeline state¡ª¡ª¡· 
-				//ÄÜ¹»¸æËßGPUÓ¦¸ÃÊ¹ÓÃÊ²Ã´×ÊÔ´ÒÔ¼°shader
-				//´ËÊ±Îª¿Õ
+				//å‘Šè¯‰å…¶ä¸€ä¸ªé»˜è®¤çš„pipeline stateâ€”â€”ã€‹ 
+				//èƒ½å¤Ÿå‘Šè¯‰GPUåº”è¯¥ä½¿ç”¨ä»€ä¹ˆèµ„æºä»¥åŠshader
+				//æ­¤æ—¶ä¸ºç©º
 				DXCall(_cmd_list->Reset(frame.cmd_allocator, nullptr));
 			}
 
-			// ÓÃĞÂµÄfence_valueÏòfence1·¢³öĞÅºÅ
+			// ç”¨æ–°çš„fence_valueå‘fence1å‘å‡ºä¿¡å·
 			void end_frame(const d3d12_surface& surface)
 			{
 				DXCall(_cmd_list->Close());
 				ID3D12CommandList* const cmd_lists[]{ _cmd_list };
 				_cmd_queue->ExecuteCommandLists(_countof(cmd_lists), &cmd_lists[0]);
 
-				//  swap chain buffers ºÍframe buffers Í¬²½½øĞĞ
+				//  swap chain buffers å’Œframe buffers åŒæ­¥è¿›è¡Œ
 				surface.present();
 
-				//frame½áÊøºó£¬Ìí¼ÓÒ»¸öfence valueµ½Ä©Î²
+				//frameç»“æŸåï¼Œæ·»åŠ ä¸€ä¸ªfence valueåˆ°æœ«å°¾
 				u64& fence_value{ _fence_value };
 				++fence_value;
 				command_frame& frame{ _cmd_frames[_frame_index] };
 				frame.fence_value = fence_value;
 				_cmd_queue->Signal(_fence, fence_value);
 
-				//Ö¡½áÊøÊ±Ôö¼ÓË÷Òı
+				//å¸§ç»“æŸæ—¶å¢åŠ ç´¢å¼•
 				_frame_index = (_frame_index + 1) % frame_buffer_count;
 			}
 
-			//µÈ´ıGPUÍê³ÉËùÓĞ¹¤×÷
+			//ç­‰å¾…GPUå®Œæˆæ‰€æœ‰å·¥ä½œ
 			void flush()
 			{
 				for (u32 i{ 0 }; i < frame_buffer_count; ++i)
@@ -145,7 +145,7 @@ namespace nidhog::graphics::d3d12::core
 				}
 			}
 
-			//»ñÈ¡Ö¸ÏòÕâÈıÕßµÄÖ¸Õë
+			//è·å–æŒ‡å‘è¿™ä¸‰è€…çš„æŒ‡é’ˆ
 			[[nodiscard]] constexpr ID3D12CommandQueue *const command_queue() const { return _cmd_queue; }
 			[[nodiscard]] constexpr id3d12_graphics_command_list *const command_list() const { return _cmd_list; }
 			[[nodiscard]] constexpr u32 frame_index() const { return _frame_index; }
@@ -160,15 +160,15 @@ namespace nidhog::graphics::d3d12::core
 				void wait(HANDLE fence_event, ID3D12Fence1* fence)
 				{
 					assert(fence && fence_event);
-					// Èç¹ûµ±Ç°µÄfenceÖµÈÔÈ»Ğ¡ÓÚ¡°fence_value¡±
-					// ÄÇÃ´ÎÒÃÇ¾ÍÖªµÀ GPU »¹Ã»ÓĞÍê³ÉÃüÁîÁĞ±íµÄÖ´ĞĞ
-					// ÒòÎªËü»¹Ã»ÓĞµ½´ï¡°_cmd_queue->Signal()¡±ÃüÁî
+					// å¦‚æœå½“å‰çš„fenceå€¼ä»ç„¶å°äºâ€œfence_valueâ€
+					// é‚£ä¹ˆæˆ‘ä»¬å°±çŸ¥é“ GPU è¿˜æ²¡æœ‰å®Œæˆå‘½ä»¤åˆ—è¡¨çš„æ‰§è¡Œ
+					// å› ä¸ºå®ƒè¿˜æ²¡æœ‰åˆ°è¾¾â€œ_cmd_queue->Signal()â€å‘½ä»¤
 					if (fence->GetCompletedValue() < fence_value)
 					{
-						// ÎÒÃÇÈÃfence´´½¨Ò»¸öÊÂ¼ş£¬µ±fenceµÄµ±Ç°ÖµµÈÓÚ¡°fence_value¡±Ê±·¢³öĞÅºÅ
+						// æˆ‘ä»¬è®©fenceåˆ›å»ºä¸€ä¸ªäº‹ä»¶ï¼Œå½“fenceçš„å½“å‰å€¼ç­‰äºâ€œfence_valueâ€æ—¶å‘å‡ºä¿¡å·
 						DXCall(fence->SetEventOnCompletion(fence_value, fence_event));
-						// µÈµ½fence´¥·¢µ±Ç°Öµ´ïµ½¡°fence_value¡±µÄÊÂ¼ş
-						// ±íÊ¾ÃüÁî¶ÓÁĞÖ´ĞĞÍê±Ï
+						// ç­‰åˆ°fenceè§¦å‘å½“å‰å€¼è¾¾åˆ°â€œfence_valueâ€çš„äº‹ä»¶
+						// è¡¨ç¤ºå‘½ä»¤é˜Ÿåˆ—æ‰§è¡Œå®Œæ¯•
 						WaitForSingleObject(fence_event, INFINITE);
 					}
 				}
@@ -184,7 +184,7 @@ namespace nidhog::graphics::d3d12::core
 			id3d12_graphics_command_list*	_cmd_list{ nullptr };
 			ID3D12Fence1*					_fence{ nullptr };
 			u64								_fence_value{ 0 };
-			command_frame					_cmd_frames[frame_buffer_count]{};//²»»á¸Ä±äµÄ³£Êı
+			command_frame					_cmd_frames[frame_buffer_count]{};//ä¸ä¼šæ”¹å˜çš„å¸¸æ•°
 			HANDLE							_fence_event{ nullptr };
 			u32								_frame_index{ 0 };
 		};
@@ -196,19 +196,19 @@ namespace nidhog::graphics::d3d12::core
 		surface_collection				surfaces;
 		d3dx::d3d12_resource_barrier    resource_barriers{};
 
-		//¶¨ÒåheapÖÖÀà
+		//å®šä¹‰heapç§ç±»
 		descriptor_heap					rtv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_RTV };
 		descriptor_heap					dsv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_DSV };
 		descriptor_heap					srv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV };
 		descriptor_heap					uav_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV };
 
-		//Ã¿¸öframebufferÌí¼ÓÖ¸Õë£¬ÒÔ±ãrelease
+		//æ¯ä¸ªframebufferæ·»åŠ æŒ‡é’ˆï¼Œä»¥ä¾¿release
 		utl::vector<IUnknown*>			deferred_releases[frame_buffer_count]{};
 		u32								deferred_releases_flag[frame_buffer_count]{};
 		std::mutex						deferred_releases_mutex{};
 
 
-		//¶¨Òå×îµÍ¹¦ÄÜ¼¶±ğ
+		//å®šä¹‰æœ€ä½åŠŸèƒ½çº§åˆ«
 		constexpr D3D_FEATURE_LEVEL		minimum_feature_level{ D3D_FEATURE_LEVEL_11_0 };
 
 		constexpr DXGI_FORMAT render_target_format{ DXGI_FORMAT_R8G8B8A8_UNORM_SRGB };
@@ -221,22 +221,22 @@ namespace nidhog::graphics::d3d12::core
 		}
 
 
-		// »ñÈ¡Ö§³Ö×îµÍ¹¦ÄÜ¼¶±ğµÄµÚÒ»¸öĞÔÄÜ×î¸ßµÄÊÊÅäÆ÷¡£
-		// NOTE: ´Ëº¯Êı¿ÉÒÔÔÚ¹¦ÄÜÉÏ½øĞĞÀ©Õ¹
-		// ÀıÈç£¬¼ì²éÊÇ·ñÁ¬½ÓÁËÈÎºÎÊä³öÉè±¸
-		// Ã¶¾ÙÖ§³ÖµÄ·Ö±æÂÊ
-		// ÎªÓÃ»§Ìá¹©Ò»ÖÖ·½·¨À´Ñ¡ÔñÔÚ¶àÊÊÅäÆ÷ÉèÖÃÖĞÊ¹ÓÃÄÄ¸öÊÊÅäÆ÷µÈ
-		// ÏêÇé¼û¹Ù·½ÎÄµµ
+		// è·å–æ”¯æŒæœ€ä½åŠŸèƒ½çº§åˆ«çš„ç¬¬ä¸€ä¸ªæ€§èƒ½æœ€é«˜çš„é€‚é…å™¨ã€‚
+		// NOTE: æ­¤å‡½æ•°å¯ä»¥åœ¨åŠŸèƒ½ä¸Šè¿›è¡Œæ‰©å±•
+		// ä¾‹å¦‚ï¼Œæ£€æŸ¥æ˜¯å¦è¿æ¥äº†ä»»ä½•è¾“å‡ºè®¾å¤‡
+		// æšä¸¾æ”¯æŒçš„åˆ†è¾¨ç‡
+		// ä¸ºç”¨æˆ·æä¾›ä¸€ç§æ–¹æ³•æ¥é€‰æ‹©åœ¨å¤šé€‚é…å™¨è®¾ç½®ä¸­ä½¿ç”¨å“ªä¸ªé€‚é…å™¨ç­‰
+		// è¯¦æƒ…è§å®˜æ–¹æ–‡æ¡£
 		IDXGIAdapter4* determine_main_adapter()
 		{
 			IDXGIAdapter4* adapter{ nullptr };
 
-			//°´ĞÔÄÜ½µĞò»ñÈ¡adapter
+			//æŒ‰æ€§èƒ½é™åºè·å–adapter
 			for (u32 i{ 0 };
 				dxgi_factory->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&adapter)) != DXGI_ERROR_NOT_FOUND;
 				++i)
 			{
-				// Ñ¡ÔñµÚÒ»¸öÖ§³Ö×îµÍ¹¦ÄÜ¼¶±ğµÄadapter
+				// é€‰æ‹©ç¬¬ä¸€ä¸ªæ”¯æŒæœ€ä½åŠŸèƒ½çº§åˆ«çš„adapter
 				if (SUCCEEDED(D3D12CreateDevice(adapter, minimum_feature_level, __uuidof(ID3D12Device), nullptr)))
 				{
 					return adapter;
@@ -256,7 +256,7 @@ namespace nidhog::graphics::d3d12::core
 				D3D_FEATURE_LEVEL_12_1,
 			};
 
-			//¼ì²é²¢Ìî³ä¸ÃÊı¾İ½á¹¹
+			//æ£€æŸ¥å¹¶å¡«å……è¯¥æ•°æ®ç»“æ„
 			D3D12_FEATURE_DATA_FEATURE_LEVELS feature_level_info{};
 			feature_level_info.NumFeatureLevels = _countof(feature_levels);
 			feature_level_info.pFeatureLevelsRequested = feature_levels;
@@ -271,9 +271,9 @@ namespace nidhog::graphics::d3d12::core
 		{
 			std::lock_guard lock{ deferred_releases_mutex };
 
-			// NOTE: ÎÒÃÇÒ»¿ªÊ¼¾ÍÇå³ıÕâ¸öflag
-			//       Èç¹ûÎÒÃÇ×îºóÇå³ıËü£¬ÄÇÃ´Ëü¿ÉÄÜ»á¸²¸ÇÆäËûÎÒÃÇ³¢ÊÔÉèÖÃµÄÏß³Ì
-			//       Èç¹ûÔÚ´¦ÀíÏîÄ¿Ö®Ç°·¢Éú¸²¸ÇÄÇ¾Í»¹ĞĞ
+			// NOTE: æˆ‘ä»¬ä¸€å¼€å§‹å°±æ¸…é™¤è¿™ä¸ªflag
+			//       å¦‚æœæˆ‘ä»¬æœ€åæ¸…é™¤å®ƒï¼Œé‚£ä¹ˆå®ƒå¯èƒ½ä¼šè¦†ç›–å…¶ä»–æˆ‘ä»¬å°è¯•è®¾ç½®çš„çº¿ç¨‹
+			//       å¦‚æœåœ¨å¤„ç†é¡¹ç›®ä¹‹å‰å‘ç”Ÿè¦†ç›–é‚£å°±è¿˜è¡Œ
 			deferred_releases_flag[frame_idx] = 0;
 
 			rtv_desc_heap.process_deferred_free(frame_idx);
@@ -281,7 +281,7 @@ namespace nidhog::graphics::d3d12::core
 			srv_desc_heap.process_deferred_free(frame_idx);
 			uav_desc_heap.process_deferred_free(frame_idx);
 
-			//±éÀú×ÊÔ´²¢release
+			//éå†èµ„æºå¹¶release
 			utl::vector<IUnknown*>& resources{ deferred_releases[frame_idx] };
 			if (!resources.empty())
 			{
@@ -290,9 +290,10 @@ namespace nidhog::graphics::d3d12::core
 			}
 		}
 
-	}//ÄäÃûnamespace
+	}//åŒ¿ånamespace
 
-	namespace detail {
+	namespace detail 
+	{
 		void deferred_release(IUnknown* resource)
 		{
 			const u32 frame_idx{ current_frame_index() };
@@ -305,16 +306,16 @@ namespace nidhog::graphics::d3d12::core
 	bool initialize()
 	{
 		// determine what is the maximum feature level that is supported
-		// È·¶¨Ö§³ÖµÄ×î´ó¹¦ÄÜ¼¶±ğÊÇÊ²Ã´
+		// ç¡®å®šæ”¯æŒçš„æœ€å¤§åŠŸèƒ½çº§åˆ«æ˜¯ä»€ä¹ˆ
 		// create a ID3D12Device (this a virtual adapter).
-		// ´´½¨Ò»¸ö D3D12Device£¨ÏÔ¿¨µÄĞéÄâ±íÊ¾£©
+		// åˆ›å»ºä¸€ä¸ª D3D12Deviceï¼ˆæ˜¾å¡çš„è™šæ‹Ÿè¡¨ç¤ºï¼‰
 
 		if (main_device) shutdown();
 		u32 dxgi_factory_flags{ 0 };
 
 #ifdef _DEBUG
 		// Enable debugging layer. Requires "Graphics Tools" optional feature
-		// ÆôÓÃµ÷ÊÔ²ã¡£ ĞèÒª¡°Graphics Tools¡±¿ÉÑ¡¹¦ÄÜ
+		// å¯ç”¨è°ƒè¯•å±‚ã€‚ éœ€è¦â€œGraphics Toolsâ€å¯é€‰åŠŸèƒ½
 		{
 			ComPtr<ID3D12Debug3> debug_interface;
 			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debug_interface))))
@@ -334,12 +335,12 @@ namespace nidhog::graphics::d3d12::core
 		}
 #endif // _DEBUG
 
-		HRESULT hr{ S_OK };//¼ì²é´íÎó´úÂë
+		HRESULT hr{ S_OK };//æ£€æŸ¥é”™è¯¯ä»£ç 
 		CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&dxgi_factory));
 		if (FAILED(hr)) return failed_init();
 
 		// determine which adapter (i.e. graphics card) to use, if any
-		// Èç¹ûÊÊÅäÆ÷Ì«¶à£¬Ñ¡ÔñÊ¹ÓÃµÄÊÊÅäÆ÷
+		// å¦‚æœé€‚é…å™¨å¤ªå¤šï¼Œé€‰æ‹©ä½¿ç”¨çš„é€‚é…å™¨
 
 		ComPtr<IDXGIAdapter4> main_adapter;
 		main_adapter.Attach(determine_main_adapter());
@@ -355,7 +356,7 @@ namespace nidhog::graphics::d3d12::core
 
 #ifdef _DEBUG
 		{
-			//ÉèÖÃ¾¯¸æµÄÑÏÖØĞÔ
+			//è®¾ç½®è­¦å‘Šçš„ä¸¥é‡æ€§
 			ComPtr<ID3D12InfoQueue> info_queue;
 			DXCall(main_device->QueryInterface(IID_PPV_ARGS(&info_queue)));
 
@@ -365,7 +366,7 @@ namespace nidhog::graphics::d3d12::core
 		}
 #endif // _DEBUG
 
-		//Ò»Ğ©heapµÄ³õÊ¼»¯
+		//ä¸€äº›heapçš„åˆå§‹åŒ–
 		bool result{ true };
 		result &= rtv_desc_heap.initialize(512, false);
 		result &= dsv_desc_heap.initialize(512, false);
@@ -392,8 +393,8 @@ namespace nidhog::graphics::d3d12::core
 	void shutdown()
 	{
 		gfx_command.release();
-		// NOTE: ÎÒÃÇ×îºó²»»áµ÷ÓÃprocess_deferred_releases
-		// ÒòÎªÄ³Ğ©×ÊÔ´£¨ÀıÈçSwap chain£©ÔÚÆäÒÀÀµ×ÊÔ´±»ÊÍ·ÅÖ®Ç°ÎŞ·¨ÊÍ·Å
+		// NOTE: æˆ‘ä»¬æœ€åä¸ä¼šè°ƒç”¨process_deferred_releases
+		// å› ä¸ºæŸäº›èµ„æºï¼ˆä¾‹å¦‚Swap chainï¼‰åœ¨å…¶ä¾èµ–èµ„æºè¢«é‡Šæ”¾ä¹‹å‰æ— æ³•é‡Šæ”¾
 		for (u32 i{ 0 }; i < frame_buffer_count; ++i)
 		{
 			process_deferred_releases(i);
@@ -406,20 +407,20 @@ namespace nidhog::graphics::d3d12::core
 
 		release(dxgi_factory);
 
-		// NOTE: Ä³Ğ©Ä£¿éÔÚ¹Ø±ÕÊ±»áÊÍ·ÅÆädescription
+		// NOTE: æŸäº›æ¨¡å—åœ¨å…³é—­æ—¶ä¼šé‡Šæ”¾å…¶description
 		//       We process those by calling process_deferred_free once more
 		rtv_desc_heap.process_deferred_free(0);
 		dsv_desc_heap.process_deferred_free(0);
 		srv_desc_heap.process_deferred_free(0);
 		uav_desc_heap.process_deferred_free(0);
-
+		
 		rtv_desc_heap.release();
 		dsv_desc_heap.release();
 		srv_desc_heap.release();
 		uav_desc_heap.release();
 
-		// NOTE: Ä³Ğ©ÀàĞÍ½öÔÚshutdown/reset/clearÆÚ¼ä¶ÔÆä×ÊÔ´Ê¹ÓÃÑÓ³ÙÊÍ·Å
-		//		 ÎªÁË×îÖÕÊÍ·ÅÕâĞ©×ÊÔ´£¬ÎÒÃÇÔÙ´Îµ÷ÓÃ process_deferred_releases
+		// NOTE: æŸäº›ç±»å‹ä»…åœ¨shutdown/reset/clearæœŸé—´å¯¹å…¶èµ„æºä½¿ç”¨å»¶è¿Ÿé‡Šæ”¾
+		//		 ä¸ºäº†æœ€ç»ˆé‡Šæ”¾è¿™äº›èµ„æºï¼Œæˆ‘ä»¬å†æ¬¡è°ƒç”¨ process_deferred_releases
 		process_deferred_releases(0);
 
 #ifdef _DEBUG
@@ -492,22 +493,22 @@ namespace nidhog::graphics::d3d12::core
 	void render_surface(surface_id id)
 
 	{
-		// µÈ´ı GPU Íê³Écommand allocator
-		// ÔÚ GPU Íê³ÉºóÖØÖÃallocator
-		// Õâ½«ÊÍ·ÅÓÃÓÚ´æ´¢commandµÄÄÚ´æ
+		// ç­‰å¾… GPU å®Œæˆcommand allocator
+		// åœ¨ GPU å®Œæˆåé‡ç½®allocator
+		// è¿™å°†é‡Šæ”¾ç”¨äºå­˜å‚¨commandçš„å†…å­˜
 		gfx_command.begin_frame();
 		id3d12_graphics_command_list* cmd_list{ gfx_command.command_list() };
 
-		//ÅĞ¶ÏÊÇ·ñÓĞflag£¬Èç¹ûÓĞ¾Í½øĞĞdeferred_releases
+		//åˆ¤æ–­æ˜¯å¦æœ‰flagï¼Œå¦‚æœæœ‰å°±è¿›è¡Œdeferred_releases
 		const u32 frame_idx{ current_frame_index() };
 		if (deferred_releases_flag[frame_idx])
 		{
 			process_deferred_releases(frame_idx);
 		}
 
-		//ÒıÓÃÎÒÃÇĞèÒªäÖÈ¾µÄsurface
+		//å¼•ç”¨æˆ‘ä»¬éœ€è¦æ¸²æŸ“çš„surface
 		const d3d12_surface& surface{ surfaces[id] };
-		//½èÖúbarrier½øĞĞstate×ª»»
+		//å€ŸåŠ©barrierè¿›è¡Œstateè½¬æ¢
 		ID3D12Resource* const current_back_buffer{ surface.back_buffer() };
 
 		d3d12_frame_info frame_info
@@ -518,7 +519,7 @@ namespace nidhog::graphics::d3d12::core
 
 		gpass::set_size({ frame_info.surface_width, frame_info.surface_height });
 		d3dx::d3d12_resource_barrier& barriers{ resource_barriers };
-		// ¼ÇÂ¼ÃüÁî
+		// è®°å½•å‘½ä»¤
 		ID3D12DescriptorHeap* const heaps[]{ srv_desc_heap.heap() };
 		cmd_list->SetDescriptorHeaps(1, &heaps[0]);
 
@@ -558,8 +559,8 @@ namespace nidhog::graphics::d3d12::core
 
 
 		// 
-		// Íê³É¼ÇÂ¼commands. ÏÖÔÚÖ´ĞĞ commands,
-		// ·¢³öĞÅºÅ²¢Ôö¼ÓÏÂÒ»Ö¡µÄfence_value
+		// å®Œæˆè®°å½•commands. ç°åœ¨æ‰§è¡Œ commands,
+		// å‘å‡ºä¿¡å·å¹¶å¢åŠ ä¸‹ä¸€å¸§çš„fence_value
 		gfx_command.end_frame(surface);
 	}
 
