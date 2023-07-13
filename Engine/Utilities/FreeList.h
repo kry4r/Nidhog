@@ -101,7 +101,7 @@ namespace nidhog::utl
             if constexpr (sizeof(T) > sizeof(u32))
             {
                 u32 i{ sizeof(u32) }; //跳过前面4 bytes.
-                const u8 *const p{ (const u8 *const)std::addressof(_array[id]) };
+                const u8* const p{ (const u8* const)std::addressof(_array[id]) };
                 //由于这里将其初始化为无效数据，调用析构会出错，所以我们实现自己的vector来防止这一行为
                 while ((p[i] == 0xcc) && (i < sizeof(T))) ++i;
                 return i == sizeof(T);

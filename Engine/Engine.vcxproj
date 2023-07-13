@@ -61,10 +61,10 @@
     <ClCompile Include="Components\Entity.cpp" />
     <ClCompile Include="Components\Script.cpp" />
     <ClCompile Include="Components\Transform.cpp" />
-    <ClCompile Include="Content\ContentLoader.cpp" />
+    <ClCompile Include="Content\ContentLoaderWin32.cpp" />
     <ClCompile Include="Content\ContentToEngine.cpp" />
-    <ClCompile Include="Core\Engine.cpp" />
-    <ClCompile Include="Core\Main.cpp" />
+    <ClCompile Include="Core\EngineWin32.cpp" />
+    <ClCompile Include="Core\MainWin32.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12Camera.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12Content.cpp" />
     <ClCompile Include="Graphics\Direct3D12\D3D12Core.cpp" />

@@ -1,8 +1,10 @@
 #pragma once
+#ifdef _WIN64
 #pragma warning(disable: 4530) //disable exception warning
+#endif
 //C/C++ header(C/C++Í·ÎÄ¼þ£©
 
-#include<stdint.h>
+#include<cstdint>
 #include<assert.h>
 #include<typeinfo>
 #include <memory>
@@ -41,7 +43,7 @@
 
 //Common header
 #include"PrimitiveTypes.h"
-#include "Utilities/Math.h"
-#include "Utilities/Utilities.h"
-#include "Utilities/MathType.h"
+#include "../Utilities/Math.h"
+#include "../Utilities/Utilities.h"
+#include "../Utilities/MathType.h"
 #include "id.h"

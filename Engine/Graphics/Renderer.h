@@ -103,11 +103,27 @@ namespace nidhog::graphics
         }
     };
 
+    struct primitve_topology {
+        enum type : u32 {
+            point_list = 1,
+            line_list,
+            line_strip,
+            triangle_list,
+            triangle_strip,
+
+            count
+        };
+    };
+
+#ifndef NIDHOG_PLUS
     //包括所有可用api
     enum class graphics_platform :u32
     {
         direct3d12 = 0,
     };
+#else
+#include "Graphics/GraphicsPlatform.h"
+#endif
 
     bool initialize(graphics_platform platform);
     void shutdown();

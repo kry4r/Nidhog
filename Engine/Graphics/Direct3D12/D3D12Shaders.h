@@ -4,23 +4,6 @@
 
 namespace nidhog::graphics::d3d12::shaders
 {
-	struct shader_types
-	{
-        enum type : u32 
-        {
-            vertex = 0,
-            hull,
-            domain,
-            geometry,
-            pixel,
-            compute,
-            amplification,
-            mesh,
-
-            count
-        };
-	};
-
     struct engine_shader 
     {
         enum id : u32 

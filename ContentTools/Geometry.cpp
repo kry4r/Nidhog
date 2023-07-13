@@ -592,7 +592,6 @@ namespace nidhog::tools
 
     void pack_data(const scene& scene, scene_data& data)
     {
-        constexpr u64 su32{ sizeof(u32) };
         //获取scene大小
         const u64 scene_size{ get_scene_size(scene) };
         //保存在buffer中，分配内存以传给editor

@@ -1,4 +1,4 @@
-#if !defined(SHIPPING)
+#if !defined(SHIPPING) && defined(_WIN64)
 #include "Content/ContentLoader.h"
 #include "Components/Script.h"
 #include "Platform/PlatformTypes.h"

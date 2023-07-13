@@ -1,5 +1,4 @@
-
-//Low-level Renderer
+//low-level renderer
 #include "Renderer.h"
 #include "GraphicsPlatformInterface.h"
 #include "Direct3D12\D3D12Interface.h"
@@ -14,10 +13,9 @@ namespace nidhog::graphics
 			".\\shaders\\d3d12\\shaders.bin",
 			// ".\\shaders\\vulkan\\shaders.bin", etc.
 		};
-
 		platform_interface gfx{};
-
-		bool set_platform_interface(graphics_platform platform)
+#ifndef NIDHOG_PLUS
+		bool set_platform_interface(graphics_platform platform, platform_interface& pi)
 		{
 			//使用switch来选择正确度API与低级渲染器
 			switch (platform)
@@ -31,11 +29,14 @@ namespace nidhog::graphics
 			assert(gfx.platform == platform);
 			return true;
 		}
+#endif
 	}//匿名namespace
-
+#ifdef NIDHOG_PLUS
+	extern bool set_platform_interface(graphics_platform platform, platform_interface& pi);
+#endif
 	bool initialize(graphics_platform platform)
 	{
-		return set_platform_interface(platform) && gfx.initialize();
+		return set_platform_interface(platform,gfx) && gfx.initialize();
 	}
 
 	void shutdown()

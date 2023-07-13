@@ -70,6 +70,9 @@ namespace nidhog::content
         utl::free_list<u8*> geometry_hierarchies;
         std::mutex          geometry_mutex;
 
+        utl::free_list < std::unique_ptr<u8[]>>     shaders;
+        std::mutex                                  shader_mutex;
+
         // NOTE: expects the same data as create_geometry_resource()
         u32 get_geometry_hierarchy_buffer_size(const void* const data)
         {
@@ -181,7 +184,7 @@ namespace nidhog::content
             return submesh_count == 1;
         }
 
-        id::id_type gpu_id_from_fake_pointer(u8* const pointer)
+        constexpr id::id_type gpu_id_from_fake_pointer(u8* const pointer)
         {
             assert((uintptr_t)pointer & single_mesh_marker);
             static_assert(sizeof(uintptr_t) > sizeof(id::id_type));
@@ -239,8 +242,7 @@ namespace nidhog::content
         {
             std::lock_guard lock{ geometry_mutex };
             u8* const  pointer{ geometry_hierarchies[id] };
-            //确定是一个pointer还是single mesh id
-            if ((uintptr_t)pointer & single_mesh_marker)
+            if ((uintptr_t)pointer & single_mesh_marker) ////确定是一个pointer还是single mesh id
             {
                 graphics::remove_submesh(gpu_id_from_fake_pointer(pointer));
             }
@@ -290,15 +292,39 @@ namespace nidhog::content
         assert(id::is_valid(id));
         switch (type)
         {
-        case asset_type::animation:                                 break;
-        case asset_type::audio:	                                    break;
-        case asset_type::material:                                  break;
-        case asset_type::mesh:	destroy_geometry_resource(id);      break;
-        case asset_type::skeleton:                                  break;
-        case asset_type::texture:                                   break;
+        case asset_type::animation: break;
+        case asset_type::audio:	break;
+        case asset_type::material: break;
+        case asset_type::mesh:	destroy_geometry_resource(id); break;
+        case asset_type::skeleton: break;
+        case asset_type::texture: break;
         default:
             assert(false);
             break;
         }
+    }
+
+    id::id_type add_shader(const u8* data)
+    {
+        const compiled_shader_ptr shader_ptr{ (const compiled_shader_ptr)data };
+        const u64 size{ sizeof(u64) + compiled_shader::hash_length + shader_ptr->byte_code_size() };
+        std::unique_ptr<u8[]> shader{ std::make_unique<u8[]>(size) };
+        memcpy(shader.get(), data, size);
+        std::lock_guard lock{ shader_mutex };
+        return shaders.add(std::move(shader));
+    }
+
+    void remove_shader(id::id_type id)
+    {
+        std::lock_guard lock{ shader_mutex };
+        assert(id::is_valid(id));
+        shaders.remove(id);
+    }
+
+    compiled_shader_ptr get_shader(id::id_type id)
+    {
+        std::lock_guard lock{ shader_mutex };
+        assert(id::is_valid(id));
+        return (const compiled_shader_ptr)(shaders[id].get());
     }
 }
