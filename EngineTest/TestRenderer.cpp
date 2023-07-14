@@ -41,7 +41,7 @@ template<class FnPtr, class... Args>
 void init_test_workers(FnPtr&& fnPtr, Args&&... args)
 {
 #if ENABLE_TEST_WORKERS
-    shutdown = false;
+    shut_down = false;
     for (auto& w : workers)
         w = std::thread(std::forward<FnPtr>(fnPtr), std::forward<Args>(args)...);
 #endif
@@ -50,12 +50,13 @@ void init_test_workers(FnPtr&& fnPtr, Args&&... args)
 void joint_test_workers()
 {
 #if ENABLE_TEST_WORKERS
-    shutdown = true;
+    shut_down = true;
     for (auto& w : workers) w.join();
 #endif
 }
 ////////////////////////////////Multithreading test worker spawn code/////////////////////////////////////////
-struct {
+struct 
+{
     game_entity::entity entity{};
     graphics::camera camera{};
 } camera;
@@ -64,13 +65,12 @@ id::id_type item_id{ id::invalid_id };
 id::id_type model_id{ id::invalid_id };
 
 graphics::render_surface _surfaces[4];
-
 time_it timer{};
 
 bool resized{ false };
 bool is_restarting{ false };
 void destroy_render_surface(graphics::render_surface& surface);
-bool test_initalize();
+bool test_initialize();
 void test_shutdown();
 //about render item
 id::id_type create_render_item(id::id_type entity_id);
@@ -124,11 +124,11 @@ LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             PostMessage(hwnd, WM_CLOSE, 0, 0);
             return 0;
         }
-        else if(wparam == VK_F11)
+        else if (wparam == VK_F11)
         {
             is_restarting = true;
             test_shutdown();
-            test_initalize();
+            test_initialize();
         }
     }
 
@@ -162,7 +162,7 @@ LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
 game_entity::entity create_one_game_entity()
 {
-    transform::init_info transform_info{ };
+    transform::init_info transform_info{};
     math::v3a rot{ 0, 3.14f, 0 };
     DirectX::XMVECTOR quat{ DirectX::XMQuaternionRotationRollPitchYawFromVector(DirectX::XMLoadFloat3A(&rot)) };
     math::v4a rot_quat;
@@ -206,12 +206,12 @@ void destroy_render_surface(graphics::render_surface& surface)
 {
     graphics::render_surface temp{ surface };
     surface = {};
-    //释放render surface和window
+
     if (temp.surface.is_valid())graphics::remove_surface(temp.surface.get_id());
     if (temp.window.is_valid())platform::remove_window(temp.window.get_id());
 }
 
-bool test_initalize()
+bool test_initialize()
 {
     while (!compile_shaders())
     {
@@ -221,12 +221,13 @@ bool test_initalize()
     }
 
     if (!graphics::initialize(graphics::graphics_platform::direct3d12)) return false;
+
     platform::window_init_info info[]
     {
-        {&win_proc, nullptr, L"Render window 1", 100 - 2000, 100 - 700, 400, 800},
-        {&win_proc, nullptr, L"Render window 2", 150 - 2000, 150 - 700, 800, 400},
-        {&win_proc, nullptr, L"Render window 3", 200 - 2000, 200 - 700, 400, 400},
-        {&win_proc, nullptr, L"Render window 4", 250 - 2000, 250 - 700, 800, 600},
+        {&win_proc, nullptr, L"Render window 1", 100 - 3000, 100 - 700, 400, 800},
+        {&win_proc, nullptr, L"Render window 2", 150 - 3000, 150 - 700, 800, 400},
+        {&win_proc, nullptr, L"Render window 3", 200 - 3000, 200 - 700, 400, 400},
+        {&win_proc, nullptr, L"Render window 4", 250 - 3000, 250 - 700, 800, 600},
     };
     static_assert(_countof(info) == _countof(_surfaces));
 
@@ -237,7 +238,7 @@ bool test_initalize()
     // load test model
     std::unique_ptr<u8[]> model;
     u64 size{ 0 };
-    if (!read_file("D:\\Nidhog\\EngineTest\\model.model", model, size)) return false;
+    if (!read_file("..\\..\\..\\EngineTest\\model.model", model, size)) return false;
 
     model_id = content::create_resource(model.get(), content::asset_type::mesh);
     if (!id::is_valid(model_id)) return false;
@@ -281,13 +282,13 @@ void test_shutdown()
 }
 bool engine_test::initialize()
 {
-    return test_initalize();
+    return test_initialize();
 }
 
 void engine_test::run()
 {
     timer.begin();
-    //std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
     //为每个surface调用渲染
     for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
     {
@@ -301,12 +302,6 @@ void engine_test::run()
 
 void engine_test::shutdown()
 {
-    joint_test_workers();
-
-    if (id::is_valid(model_id))
-    {
-        content::destroy_resource(model_id, content::asset_type::mesh);
-    }
     test_shutdown();
 }
 

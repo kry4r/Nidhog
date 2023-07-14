@@ -4,7 +4,8 @@
 
 namespace nidhog::content
 {
-    namespace {
+    namespace 
+    {
         //类似于先前的blob，but only used for output format
         class geometry_hierarchy_stream
         {
@@ -265,6 +266,25 @@ namespace nidhog::content
             geometry_hierarchies.remove(id);
         }
 
+        // NOTE: expects data to contain
+        // struct {
+        //  material_type::type type,
+        //  u32                 texture_count,
+        //  id::id_type         shader_ids[shader_type::count],
+        //  id::id_type*        texture_ids;
+        // } material_init_info
+        id::id_type create_material_resource(const void* const data)
+        {
+            assert(data);
+            return graphics::add_material(*(const graphics::material_init_info* const)data);
+        }
+
+        void destroy_material_resource(id::id_type id)
+        {
+            graphics::remove_material(id);
+        }
+
+
     } // anonymous namespace
 
     id::id_type create_resource(const void* const data, asset_type::type type)
@@ -277,7 +297,7 @@ namespace nidhog::content
         {
         case asset_type::animation:                                     break;
         case asset_type::audio:	                                        break;
-        case asset_type::material:                                      break;
+        case asset_type::material: id = create_material_resource(data); break;
         case asset_type::mesh:	id = create_geometry_resource(data);    break;
         case asset_type::skeleton:                                      break;
         case asset_type::texture:                                       break;
@@ -294,7 +314,7 @@ namespace nidhog::content
         {
         case asset_type::animation: break;
         case asset_type::audio:	break;
-        case asset_type::material: break;
+        case asset_type::material: destroy_material_resource(id);  break;
         case asset_type::mesh:	destroy_geometry_resource(id); break;
         case asset_type::skeleton: break;
         case asset_type::texture: break;

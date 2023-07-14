@@ -4,6 +4,7 @@
 #include "D3D12GPass.h"
 #include "D3D12PostProcess.h"
 #include "D3D12Upload.h"
+#include "D3D12Content.h"
 
 using namespace Microsoft::WRL;
 
@@ -377,7 +378,7 @@ namespace nidhog::graphics::d3d12::core
 		new (&gfx_command) d3d12_command(main_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 		if (!gfx_command.command_queue()) return failed_init();
 
-		if (!(shaders::initialize() && gpass::initialize() && fx::initialize() && upload::initialize()))
+		if (!(shaders::initialize() && gpass::initialize() && fx::initialize() && upload::initialize() && content::initialize()))
 			return failed_init();
 
 		NAME_D3D12_OBJECT(main_device, L"Main D3D12 Device");
@@ -392,6 +393,7 @@ namespace nidhog::graphics::d3d12::core
 	}
 	void shutdown()
 	{
+
 		gfx_command.release();
 		// NOTE: 我们最后不会调用process_deferred_releases
 		// 因为某些资源（例如Swap chain）在其依赖资源被释放之前无法释放
@@ -400,6 +402,7 @@ namespace nidhog::graphics::d3d12::core
 			process_deferred_releases(i);
 		}
 		// shutdown modules
+		content::shutdown();
 		upload::shutdown();
 		fx::shutdown();
 		gpass::shutdown();

@@ -67,14 +67,14 @@ if(FAILED(x)) {                                     \
 // 设置 COM 对象的名称并在 Visual Studio 的输出面板中输出调试字符串
 #define NAME_D3D12_OBJECT(obj, name) obj->SetName(name); OutputDebugString(L"::D3D12 Object Created: "); OutputDebugString(name); OutputDebugString(L"\n");
 // 用于命名某项东西之后在命名末尾添加索引
-#define NAME_D3D12_OBJECT_INDEXED(obj, n, name)     \
-{                                                   \
-wchar_t full_name[128];                             \
-if (swprintf_s(full_name, L"%s[%u]", name, n) >0 ){ \
-    obj->SetName(full_name);                        \
-    OutputDebugString(L"::D3D12 Object Created: "); \
-    OutputDebugString(full_name);                   \
-    OutputDebugString(L"\n");                       \
+#define NAME_D3D12_OBJECT_INDEXED(obj, n, name)            \
+{                                                          \
+wchar_t full_name[128];                                    \
+if (swprintf_s(full_name, L"%s[%llu]", name, (u64)n) >0 ){ \
+    obj->SetName(full_name);                               \
+    OutputDebugString(L"::D3D12 Object Created: ");        \
+    OutputDebugString(full_name);                          \
+    OutputDebugString(L"\n");                              \
 }}
 #else
 #define NAME_D3D12_OBJECT(x, name)
