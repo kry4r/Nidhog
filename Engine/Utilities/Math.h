@@ -68,4 +68,19 @@ namespace nidhog::math
         static_assert(!(alignment & mask), "Alignment should be a power of 2.");
         return (size & ~mask);
     }
+    //Intrinsics funtion£ºCyclic Redundancy Check(CRC32)
+    [[nodiscard]] constexpr u64 calc_crc32_u64(const u8* const data, u64 size)
+    {
+        assert(size >= sizeof(u64));
+        u64 crc{ 0 };
+        const u8* at{ data };
+        const u8* const end{ data + align_size_down<sizeof(u64)>(size) };
+        while (at < end)
+        {
+            crc = _mm_crc32_u64(crc, *((const u64*)at));
+            at += sizeof(u64);
+        }
+
+        return crc;
+    }
 }

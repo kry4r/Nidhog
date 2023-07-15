@@ -7,6 +7,14 @@
 
 namespace nidhog::graphics
 {
+    struct frame_info
+    {
+        id::id_type*    render_item_ids{ nullptr }; //Height level render item ids
+        f32*            thresholds{ nullptr };
+        u32             render_item_count{ 0 };
+        camera_id       camer_id{ id::invalid_id };
+    };
+
     //类似window的构建
     DEFINE_TYPED_ID(surface_id);
     class surface
@@ -201,4 +209,8 @@ namespace nidhog::graphics
 
     id::id_type add_material(material_init_info info);
     void remove_material(id::id_type id);
+
+    id::id_type add_render_item(id::id_type entity_id, id::id_type geometry_content_id,
+                                u32 material_count, const id::id_type* const material_ids);
+    void remove_render_item(id::id_type id);
 }

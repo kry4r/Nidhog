@@ -2,10 +2,14 @@
 
 #include "D3D12CommonHeaders.h"
 
-namespace nidhog::graphics::d3d12 {
+namespace nidhog::graphics::d3d12 
+{
 	struct d3d12_frame_info;
 }
-namespace nidhog::graphics::d3d12::gpass {
+namespace nidhog::graphics::d3d12::gpass 
+{
+	constexpr DXGI_FORMAT           main_buffer_format{ DXGI_FORMAT_R16G16B16A16_FLOAT };
+	constexpr DXGI_FORMAT           depth_buffer_format{ DXGI_FORMAT_D32_FLOAT };
 
 	//²»Í¸Ã÷
 	struct opaque_root_parameter 
