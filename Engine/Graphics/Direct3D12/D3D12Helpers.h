@@ -155,6 +155,18 @@ namespace nidhog::graphics::d3d12::d3dx
         };
     } depth_state;
 
+
+    // NOTE:ÄÚ´æ¶ÔÆë
+    constexpr u64  align_size_for_constant_buffer(u64 size)
+    {
+        return math::align_size_up<D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT>(size);
+    }
+
+    constexpr u64 align_size_for_texture(u64 size)
+    {
+        return math::align_size_up<D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT>(size);
+    }
+
     //define blend state
     constexpr struct 
     {

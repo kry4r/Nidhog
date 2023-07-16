@@ -7,7 +7,7 @@
 namespace nidhog::math
 {
 	template<typename T>
-	constexpr T clamp(T value, T min, T max)
+    [[nodiscard]] constexpr T clamp(T value, T min, T max)
 	{
 		return (value < min) ? min : (value > max) ? max : value;
 	}
@@ -15,7 +15,7 @@ namespace nidhog::math
     //和中頁叱倖嬉淫嚥盾淫痕方
     //！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
     template<u32 bits>
-    constexpr u32 pack_unit_float(f32 f)
+    [[nodiscard]] constexpr u32 pack_unit_float(f32 f)
     {
         static_assert(bits <= sizeof(u32) * 8);
         assert(f >= 0.f && f <= 1.f);
@@ -24,7 +24,7 @@ namespace nidhog::math
     }
 
     template<u32 bits>
-    constexpr f32 unpack_to_unit_float(u32 i)
+    [[nodiscard]] constexpr f32 unpack_to_unit_float(u32 i)
     {
         static_assert(bits <= sizeof(u32) * 8);
         assert(i < ((u32)1 << bits));
@@ -33,7 +33,7 @@ namespace nidhog::math
     }
 
     template<u32 bits>
-    constexpr u32 pack_float(f32 f, f32 min, f32 max)
+    [[nodiscard]] constexpr u32 pack_float(f32 f, f32 min, f32 max)
     {
         assert(min < max);
         assert(f <= max && f >= min);
@@ -42,7 +42,7 @@ namespace nidhog::math
     }
 
     template<u32 bits>
-    constexpr f32 unpack_to_float(u32 i, f32 min, f32 max)
+    [[nodiscard]] constexpr f32 unpack_to_float(u32 i, f32 min, f32 max)
     {
         assert(min < max);
         return unpack_to_unit_float<bits>(i) * (max - min) + min;
@@ -51,7 +51,7 @@ namespace nidhog::math
 
     // Align by rounding up. Will result in a multiple of 'alignment'that is greater than or equal to 'size'.
     template<u64 alignment>
-    constexpr u64 align_size_up(u64 size)
+    [[nodiscard]] constexpr u64 align_size_up(u64 size)
     {
         static_assert(alignment, "Alignment must be non-zero.");
         constexpr u64 mask{ alignment - 1 };
@@ -61,13 +61,32 @@ namespace nidhog::math
 
     // Align by rounding down. Will result in a multiple of 'alignment' that is greater than or equal to 'size'.
     template<u64 alignment>
-    constexpr u64 align_size_down(u64 size)
+    [[nodiscard]] constexpr u64 align_size_down(u64 size)
     {
         static_assert(alignment, "Alignment must be non-zero.");
         constexpr u64 mask{ alignment - 1 };
         static_assert(!(alignment & mask), "Alignment should be a power of 2.");
         return (size & ~mask);
     }
+
+    // Align by rounding up. Will result in a multiple of 'alignment' that is greater than or equal to 'size'.
+    [[nodiscard]] constexpr u64 align_size_up(u64 size, u64 alignment)
+    {
+        assert(alignment && "Alignment must be non-zero.");
+        const u64 mask{ alignment - 1 };
+        assert(!(alignment & mask) && "Alignment should be a power of 2.");
+        return ((size + mask) & ~mask);
+    }
+
+    // Align by rounding down. Will result in a multiple of 'alignment' that is less than or equal to 'size'.
+    [[nodiscard]] constexpr u64 align_size_down(u64 size, u64 alignment)
+    {
+        assert(alignment && "Alignment must be non-zero.");
+        const u64 mask{ alignment - 1 };
+        assert(!(alignment & mask) && "Alignment should be a power of 2.");
+        return (size & ~mask);
+    }
+
     //Intrinsics funtion��Cyclic Redundancy Check(CRC32)
     [[nodiscard]] constexpr u64 calc_crc32_u64(const u8* const data, u64 size)
     {
