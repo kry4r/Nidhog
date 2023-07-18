@@ -15,4 +15,6 @@ The project homepage is located in
 
 ### Some thoughts
 
-2023/7/16 -Because I am not familiar with hlsl, and I am actively preparing for recruitment and supplementing various knowledge, the progress of ***NihogEngine*** will slow down
+2023/7/16 -Because I am actively preparing for recruitment and supplementing various knowledge, the progress of ***NihogEngine*** will slow down
+
+2023/7/18 -Just delaying updates, but not stopping the project. Whenever I have time, I will update as soon as possible!!!!   (* v *)
