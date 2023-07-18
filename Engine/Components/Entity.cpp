@@ -14,8 +14,7 @@ namespace nidhog::game_entity {
 
     } // 匿名的namespace
 
-    entity
-        create(entity_info info)
+    entity create(entity_info info)
     {
         assert(info.transform); // 所有游戏实体都必须有一个transform组件
         if (!info.transform) return entity{};

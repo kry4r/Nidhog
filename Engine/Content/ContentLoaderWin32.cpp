@@ -109,7 +109,9 @@ namespace nidhog::content
 		for (u32 entity_index{ 0 }; entity_index < num_entities; ++entity_index) 
 		{
 			game_entity::entity_info info{};
-			const u32 entity_type{ *at }; at += su32;
+			///const u32 entity_type{ *at }; 
+			//skip for now
+			at += su32;
 			const u32 num_components{ *at }; at += su32;
 			if (!num_components) return false;
 

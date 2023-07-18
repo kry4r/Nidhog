@@ -66,7 +66,7 @@ namespace nidhog::graphics::d3d12::fx
 	}
 
     void post_process(id3d12_graphics_command_list* cmd_list,
-                      const d3d12::d3d12_frame_info& d3d12_info,
+                      const d3d12_frame_info& d3d12_info,
                       D3D12_CPU_DESCRIPTOR_HANDLE target_rtv)
     {
         cmd_list->SetGraphicsRootSignature(fx_root_sig);

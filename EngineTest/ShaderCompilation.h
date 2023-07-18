@@ -22,5 +22,5 @@ struct shader_file_info
 	const char* function;
 	shader_types::type   type;
 };
-std::unique_ptr<u8[]> compile_shader(shader_file_info info, const char* file_path);
+std::unique_ptr<u8[]> compile_shader(shader_file_info info, const char* file_path, nidhog::utl::vector<std::wstring>& extra_args);
 bool compile_shaders();

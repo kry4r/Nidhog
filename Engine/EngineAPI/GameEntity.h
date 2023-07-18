@@ -16,11 +16,17 @@ namespace nidhog
         public:
             constexpr explicit entity(entity_id id) : _id{ id } {}
             constexpr entity() : _id{ id::invalid_id } {}
-            constexpr entity_id get_id() const { return _id; }
-            constexpr bool is_valid() const { return id::is_valid(_id); }//check id
+            [[nodiscard]] constexpr entity_id get_id() const { return _id; }
+            [[nodiscard]] constexpr bool is_valid() const { return id::is_valid(_id); }//check id
 
             transform::component transform() const;
             script::component script() const;
+
+            //some element of entity
+            [[nodiscard]] math::v4 rotation() const { return transform().rotation(); }
+            [[nodiscard]] math::v3 orientation() const { return transform().orientation(); }
+            [[nodiscard]] math::v3 position() const { return transform().position(); }
+            [[nodiscard]] math::v3 scale() const { return transform().scale(); }
         private:
             entity_id _id;
         };
@@ -38,6 +44,17 @@ namespace nidhog
             //基类，不想被其他访问并实例化，构造函数放在protected中
             constexpr explicit entity_script(game_entity::entity entity):game_entity::entity{entity.get_id()}{}
             
+            //set transform component for this entity
+            void set_rotation(math::v4 rotation_quaternion) const { set_rotation(this, rotation_quaternion); }
+            void set_orientation(math::v3 orientation_vector) const { set_orientation(this, orientation_vector); }
+            void set_position(math::v3 position) const { set_position(this, position); }
+            void set_scale(math::v3 scale) const { set_scale(this, scale); }
+
+            //for all component ,not just for component with script
+            static void set_rotation(const game_entity::entity* const entity, math::v4 rotation_quaternion);
+            static void set_orientation(const game_entity::entity* const entity, math::v3 orientation_vector);
+            static void set_position(const game_entity::entity* const entity, math::v3 position);
+            static void set_scale(const game_entity::entity* const entity, math::v3 scale);
         };
         //不讲这些明确暴露给游戏代码，于是使用一个namespace
         namespace detail
