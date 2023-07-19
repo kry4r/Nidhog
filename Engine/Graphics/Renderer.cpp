@@ -65,6 +65,8 @@ namespace nidhog::graphics
 		gfx.surface.remove(id);
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////// Surface //////////////////////////////////////////////////////////////////////////////////////////////
+
 	void surface::resize(u32 width, u32 height) const
 	{
 		assert(is_valid());
@@ -89,6 +91,79 @@ namespace nidhog::graphics
 		gfx.surface.render(_id, info);
 	}
 
+	/////////////////////////////////////////////////////////////////////////////////////   Light   //////////////////////////////////////////////////////////////////////////////////////////////
+
+	light create_light(light_init_info info)
+	{
+		return gfx.light.create(info);
+	}
+
+	void remove_light(light_id id, u64 light_set_key)
+	{
+		gfx.light.remove(id, light_set_key);
+	}
+
+	void light::is_enabled(bool is_enabled) const
+	{
+		assert(is_valid());
+		gfx.light.set_parameter(_id, _light_set_key, light_parameter::is_enabled, &is_enabled, sizeof(is_enabled));
+	}
+
+	void light::intensity(f32 intensity) const
+	{
+		assert(is_valid());
+		gfx.light.set_parameter(_id, _light_set_key, light_parameter::intensity, &intensity, sizeof(intensity));
+	}
+
+	void light::color(math::v3 color) const
+	{
+		assert(is_valid());
+		gfx.light.set_parameter(_id, _light_set_key, light_parameter::color, &color, sizeof(color));
+	}
+
+
+	bool light::is_enabled() const
+	{
+		assert(is_valid());
+		bool is_enabled;
+		gfx.light.get_parameter(_id, _light_set_key, light_parameter::is_enabled, &is_enabled, sizeof(is_enabled));
+		return is_enabled;
+	}
+
+	f32 light::intensity() const
+	{
+		assert(is_valid());
+		f32 intensity;
+		gfx.light.get_parameter(_id, _light_set_key, light_parameter::intensity, &intensity, sizeof(intensity));
+		return intensity;
+	}
+
+	math::v3 light::color() const
+	{
+		assert(is_valid());
+		math::v3 color;
+		gfx.light.get_parameter(_id, _light_set_key, light_parameter::color, &color, sizeof(color));
+		return color;
+	}
+
+	light::type light::light_type() const
+	{
+		assert(is_valid());
+		type type;
+		gfx.light.get_parameter(_id, _light_set_key, light_parameter::type, &type, sizeof(type));
+		return type;
+	}
+
+	id::id_type light::entity_id() const
+	{
+		assert(is_valid());
+		id::id_type id;
+		gfx.light.get_parameter(_id, _light_set_key, light_parameter::entity_id, &id, sizeof(id));
+		return id;
+	}
+
+
+	///////////////////////////////////////////////////////////////////////////////////// Camera//////////////////////////////////////////////////////////////////////////////////////////////
 	camera create_camera(camera_init_info info)
 	{
 		return gfx.camera.create(info);
@@ -247,6 +322,9 @@ namespace nidhog::graphics
 		gfx.camera.get_parameter(_id, camera_parameter::entity_id, &entity_id, sizeof(entity_id));
 		return entity_id;
 	}
+
+
+	///////////////////////////////////////////////////////////////////////////////////// SubMesh  //////////////////////////////////////////////////////////////////////////////////////////////
 
 	id::id_type add_submesh(const u8*& data)
 	{

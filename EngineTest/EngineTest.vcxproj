@@ -179,6 +179,7 @@ xcopy /Y /D $(SolutionDir)packages\DirectXShaderCompiler\bin\x64\dxil.dll</Comma
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Lights.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="ShaderCompilation.cpp" />
     <ClCompile Include="TestRenderer.cpp" />

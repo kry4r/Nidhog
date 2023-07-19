@@ -95,7 +95,7 @@ namespace nidhog::utl
 
 	private:
         //检查以四个字节存放接下来三个可用插槽后是否有剩余
-        constexpr bool already_removed(u32 id)
+        constexpr bool already_removed(u32 id) const
         {
             // NOTE: when sizeof(T) == sizeof(u32) 我们就不能在item已经remove的情况下测试
             if constexpr (sizeof(T) > sizeof(u32))
