@@ -62,6 +62,7 @@ namespace nidhog::content
             u32             _lod_count;
         };
 
+        // NOTE: This is needed to maintain compatibility with STL vector.
         struct noexcept_map 
         {
             std::unordered_map<u32, std::unique_ptr<u8[]>> map;
@@ -339,7 +340,7 @@ namespace nidhog::content
         {
             assert(shaders[i]);
             const compiled_shader_ptr shader_ptr{ (const compiled_shader_ptr)shaders[i] };
-            const u64 size{ compiled_shader::buffer_size(shader_ptr->byte_code_size()) };
+            const u64 size{ shader_ptr->buffer_size() };
             std::unique_ptr<u8[]> shader{ std::make_unique<u8[]>(size) };
             memcpy(shader.get(), shaders[i], size);
             group.map[keys[i]] = std::move(shader);
@@ -411,7 +412,6 @@ namespace nidhog::content
             u8* const pointer{ geometry_hierarchies[geometry_ids[i]] };
             if ((uintptr_t)pointer & single_mesh_marker)
             {
-                assert(id_count == 1);
                 offsets.emplace_back(lod_offset{ 0, 1 });
             }
             else

@@ -77,8 +77,7 @@ namespace nidhog::tools
             const u32 row_length{ horizontal_count + 1 }; // number of vertices in a row
             for (u32 j{ 0 }; j < vertical_count; ++j)
             {
-                u32 k{ 0 };
-                for (u32 i{ k }; i < horizontal_count; ++i)
+                for (u32 i{ 0 }; i < horizontal_count; ++i)
                 {
                     const u32 index[4]
                     {
@@ -97,7 +96,6 @@ namespace nidhog::tools
                     m.raw_indices.emplace_back(index[flip_winding ? 3 : 1]);
                     m.raw_indices.emplace_back(index[flip_winding ? 1 : 3]);
                 }
-                ++k;
             }
 
             //三个顶点 *2 =一个四边形*四边形个数=总顶点数

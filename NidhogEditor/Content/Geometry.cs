@@ -214,7 +214,7 @@ namespace NidhogEditor.Content
             get => _smootingAngle;
             set
             {
-                if (_smootingAngle != value)
+                if (!_smootingAngle.IsTheSameAs(value))
                 {
                     _smootingAngle = value;
                     OnPropertyChanged(nameof(SmootingAngle));

@@ -12,8 +12,8 @@ namespace nidhog::graphics::d3d12::camera {
             assert(sizeof(up_vector) == size);
             camera.up(up_vector);
         }
-
-        void set_field_of_view(d3d12_camera& camera, const void* const data, [[maybe_unused]] u32 size)
+        //funtion that used DirectXMath func can be constexpr
+        constexpr void set_field_of_view(d3d12_camera& camera, const void* const data, [[maybe_unused]] u32 size)
         {
             assert(camera.projection_type() == graphics::camera::perspective);
             f32 fov{ *(f32*)data };
@@ -21,7 +21,7 @@ namespace nidhog::graphics::d3d12::camera {
             camera.field_of_view(fov);
         }
 
-        void set_aspect_ratio(d3d12_camera& camera, const void* const data, [[maybe_unused]] u32 size)
+        constexpr void set_aspect_ratio(d3d12_camera& camera, const void* const data, [[maybe_unused]] u32 size)
         {
             assert(camera.projection_type() == graphics::camera::perspective);
             f32 aspect_ratio{ *(f32*)data };
@@ -29,7 +29,7 @@ namespace nidhog::graphics::d3d12::camera {
             camera.aspect_ratio(aspect_ratio);
         }
 
-        void set_view_width(d3d12_camera& camera, const void* const data, [[maybe_unused]] u32 size)
+        constexpr void set_view_width(d3d12_camera& camera, const void* const data, [[maybe_unused]] u32 size)
         {
             assert(camera.projection_type() == graphics::camera::orthographic);
             f32 view_width{ *(f32*)data };
@@ -37,7 +37,7 @@ namespace nidhog::graphics::d3d12::camera {
             camera.view_width(view_width);
         }
 
-        void set_view_height(d3d12_camera& camera, const void* const data, [[maybe_unused]] u32 size)
+        constexpr void set_view_height(d3d12_camera& camera, const void* const data, [[maybe_unused]] u32 size)
         {
             assert(camera.projection_type() == graphics::camera::orthographic);
             f32 view_height{ *(f32*)data };
@@ -45,14 +45,14 @@ namespace nidhog::graphics::d3d12::camera {
             camera.view_height(view_height);
         }
 
-        void set_near_z(d3d12_camera& camera, const void* const data, [[maybe_unused]] u32 size)
+        constexpr void set_near_z(d3d12_camera& camera, const void* const data, [[maybe_unused]] u32 size)
         {
             f32 near_z{ *(f32*)data };
             assert(sizeof(near_z) == size);
             camera.near_z(near_z);
         }
 
-        void set_far_z(d3d12_camera& camera, const void* const data, [[maybe_unused]] u32 size)
+        constexpr void set_far_z(d3d12_camera& camera, const void* const data, [[maybe_unused]] u32 size)
         {
             f32 far_z{ *(f32*)data };
             assert(sizeof(far_z) == size);
@@ -101,7 +101,7 @@ namespace nidhog::graphics::d3d12::camera {
             DirectX::XMStoreFloat3(up_vector, camera.up());
         }
 
-        void get_field_of_view(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
+        constexpr void get_field_of_view(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
         {
             assert(camera.projection_type() == graphics::camera::perspective);
             f32* const fov{ (f32* const)data };
@@ -109,7 +109,7 @@ namespace nidhog::graphics::d3d12::camera {
             *fov = camera.field_of_view();
         }
 
-        void get_aspect_ratio(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
+        constexpr void get_aspect_ratio(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
         {
             assert(camera.projection_type() == graphics::camera::perspective);
             f32* const aspect_ratio{ (f32* const)data };
@@ -117,7 +117,7 @@ namespace nidhog::graphics::d3d12::camera {
             *aspect_ratio = camera.aspect_ratio();
         }
 
-        void get_view_width(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
+        constexpr void get_view_width(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
         {
             assert(camera.projection_type() == graphics::camera::orthographic);
             f32* const view_width{ (f32* const)data };
@@ -125,7 +125,7 @@ namespace nidhog::graphics::d3d12::camera {
             *view_width = camera.view_width();
         }
 
-        void get_view_height(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
+        constexpr void get_view_height(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
         {
             assert(camera.projection_type() == graphics::camera::orthographic);
             f32* const view_height{ (f32* const)data };
@@ -133,28 +133,28 @@ namespace nidhog::graphics::d3d12::camera {
             *view_height = camera.view_height();
         }
 
-        void get_near_z(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
+        constexpr void get_near_z(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
         {
             f32* const near_z{ (f32* const)data };
             assert(sizeof(f32) == size);
             *near_z = camera.near_z();
         }
 
-        void get_far_z(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
+        constexpr void get_far_z(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
         {
             f32* const far_z{ (f32* const)data };
             assert(sizeof(f32) == size);
             *far_z = camera.far_z();
         }
 
-        void get_projection_type(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
+        constexpr void get_projection_type(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
         {
             graphics::camera::type* const type{ (graphics::camera::type* const)data };
             assert(sizeof(graphics::camera::type) == size);
             *type = camera.projection_type();
         }
 
-        void get_entity_id(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
+        constexpr void get_entity_id(d3d12_camera& camera, void* const data, [[maybe_unused]] u32 size)
         {
             id::id_type* const entity_id{ (id::id_type* const)data };
             assert(sizeof(id::id_type) == size);
@@ -248,21 +248,21 @@ namespace nidhog::graphics::d3d12::camera {
         _up = DirectX::XMLoadFloat3(&up);
     }
 
-    void d3d12_camera::field_of_view(f32 fov)
+    constexpr void d3d12_camera::field_of_view(f32 fov)
     {
         assert(_projection_type == graphics::camera::perspective);
         _field_of_view = fov;
         _is_dirty = true;
     }
 
-    void d3d12_camera::aspect_ratio(f32 aspect_ratio)
+    constexpr void d3d12_camera::aspect_ratio(f32 aspect_ratio)
     {
         assert(_projection_type == graphics::camera::perspective);
         _aspect_ratio = aspect_ratio;
         _is_dirty = true;
     }
 
-    void d3d12_camera::view_width(f32 width)
+    constexpr void d3d12_camera::view_width(f32 width)
     {
         assert(width);
         assert(_projection_type == graphics::camera::orthographic);
@@ -270,7 +270,7 @@ namespace nidhog::graphics::d3d12::camera {
         _is_dirty = true;
     }
 
-    void d3d12_camera::view_height(f32 height)
+    constexpr void d3d12_camera::view_height(f32 height)
     {
         assert(height);
         assert(_projection_type == graphics::camera::orthographic);
@@ -278,13 +278,13 @@ namespace nidhog::graphics::d3d12::camera {
         _is_dirty = true;
     }
 
-    void d3d12_camera::near_z(f32 near_z)
+    constexpr void d3d12_camera::near_z(f32 near_z)
     {
         _near_z = near_z;
         _is_dirty = true;
     }
 
-    void d3d12_camera::far_z(f32 far_z)
+    constexpr void d3d12_camera::far_z(f32 far_z)
     {
         _far_z = far_z;
         _is_dirty = true;
