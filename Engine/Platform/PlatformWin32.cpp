@@ -2,6 +2,7 @@
 
 #include "Platform.h"
 #include "PlatformTypes.h"
+#include "Input/InputWin32.h"
 
 
 
@@ -61,7 +62,9 @@ namespace nidhog::platform {
                 break;
             }
 
-            if (resized && GetAsyncKeyState(VK_LBUTTON) >= 0)
+            input::process_input_message(hwnd, msg, wparam, lparam);
+
+            if (resized && GetKeyState(VK_LBUTTON) >= 0)
             {
                 window_info& info{ get_from_handle(hwnd) };
                 assert(info.hwnd);
