@@ -78,6 +78,7 @@ if (swprintf_s(full_name, L"%s[%llu]", name, (u64)n) >0 ){ \
 }}
 #else
 #define NAME_D3D12_OBJECT(x, name)
+#define NAME_D3D12_OBJECT_INDEXED(x, n, name)
 #endif // _DEBUG
 
 

@@ -483,7 +483,7 @@ namespace NidhogEditor.Content
                     _lodGroups.Add(lodGroup);
                 }
                 // For Testing. Remove later!
-                // PackForEngine();
+                PackForEngine();
                 // For Testing. Remove later!
 
             }
