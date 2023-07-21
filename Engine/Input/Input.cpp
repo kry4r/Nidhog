@@ -1,9 +1,7 @@
 #include "Input.h"
 
-namespace nidhog::input 
-{
-    namespace 
-    {
+namespace nidhog::input {
+    namespace {
 
         struct input_binding
         {
@@ -25,7 +23,8 @@ namespace nidhog::input
 
     } // anonymous namespace
 
-    void bind(input_source source)
+    void
+        bind(input_source source)
     {
         assert(source.source_type < input_source::count);
         const u64 key{ get_key(source.source_type, source.code) };
@@ -35,7 +34,8 @@ namespace nidhog::input
         source_binding_map[key] = source.binding;
     }
 
-    void unbind(input_source::type type, input_code::code code)
+    void
+        unbind(input_source::type type, input_code::code code)
     {
         assert(type < input_source::count);
         const u64 key{ get_key(type, code) };
@@ -48,21 +48,15 @@ namespace nidhog::input
         assert(input_bindings.count(binding_key));
         input_binding& binding{ input_bindings[binding_key] };
         utl::vector<input_source>& sources{ binding.sources };
-        u32 index{ u32_invalid_id };
         for (u32 i{ 0 }; i < sources.size(); ++i)
         {
             if (sources[i].source_type == type && sources[i].code == code)
             {
                 assert(sources[i].binding == source_binding_map[key]);
-                index = i;
+                utl::erase_unordered(sources, i);
+                source_binding_map.erase(key);
                 break;
             }
-        }
-
-        if (index != u32_invalid_id)
-        {
-            utl::erase_unordered(sources, index);
-            source_binding_map.erase(key);
         }
 
         if (!sources.size())
@@ -72,7 +66,8 @@ namespace nidhog::input
         }
     }
 
-    void unbind(u64 binding)
+    void
+        unbind(u64 binding)
     {
         if (!input_bindings.count(binding))
         {
@@ -91,7 +86,8 @@ namespace nidhog::input
         input_bindings.erase(binding);
     }
 
-    void set(input_source::type type, input_code::code code, math::v3 value)
+    void
+        set(input_source::type type, input_code::code code, math::v3 value)
     {
         assert(type < input_source::count);
         const u64 key{ get_key(type, code) };
@@ -123,14 +119,16 @@ namespace nidhog::input
         }
     }
 
-    void get(input_source::type type, input_code::code code, input_value& value)
+    void
+        get(input_source::type type, input_code::code code, input_value& value)
     {
         assert(type < input_source::count);
         const u64 key{ get_key(type, code) };
         value = input_values[key];
     }
 
-    void get(u64 binding, input_value& value)
+    void
+        get(u64 binding, input_value& value)
     {
         if (!input_bindings.count(binding))
         {
@@ -145,7 +143,7 @@ namespace nidhog::input
             return;
         }
 
-        utl::vector<input_source>& sources{ input_bindings[binding].sources };
+        utl::vector<input_source>& sources{ input_binding.sources };
         input_value sub_value{};
         input_value result{};
 
@@ -162,8 +160,8 @@ namespace nidhog::input
             }
             else
             {
-                (&result.previous.x)[source.axis] += sub_value.previous.x * source.multiplier;
-                (&result.current.x)[source.axis] += sub_value.current.x * source.multiplier;
+                (&result.previous.x)[source.axis] += (&sub_value.previous.x)[source.source_axis] * source.multiplier;
+                (&result.current.x)[source.axis] += (&sub_value.current.x)[source.source_axis] * source.multiplier;
             }
         }
 

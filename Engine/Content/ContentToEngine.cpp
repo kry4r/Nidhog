@@ -55,11 +55,11 @@ namespace nidhog::content
             [[nodiscard]] constexpr id::id_type* gpu_ids() const { return _gpu_ids; }
 
         private:
-            u8* const       _buffer;
-            f32* _thresholds;
-            lod_offset* _lod_offsets;
-            id::id_type* _gpu_ids;
-            u32             _lod_count;
+            u8* const           _buffer;
+            f32*                _thresholds;
+            lod_offset*         _lod_offsets;
+            id::id_type*        _gpu_ids;
+            u32                 _lod_count;
         };
 
         // NOTE: This is needed to maintain compatibility with STL vector.
