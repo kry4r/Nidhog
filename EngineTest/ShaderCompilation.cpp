@@ -32,9 +32,10 @@ namespace
 	
 	constexpr engine_shader_info engine_shader_files[]
 	{
-		engine_shader::fullscreen_triangle_vs,{"FullScreenTriangle.hlsl", "FullScreenTriangleVS", shader_types::vertex},
-		engine_shader::fill_color_ps,{"FillColor.hlsl", "FillColorPS", shader_types::pixel},
-		engine_shader::post_process,{"PostProcess.hlsl", "PostProcessPS",  shader_types::pixel},
+		{engine_shader::fullscreen_triangle_vs, {"FullScreenTriangle.hlsl", "FullScreenTriangleVS", shader_types::vertex}},
+		{engine_shader::fill_color_ps,          {"FillColor.hlsl", "FillColorPS", shader_types::pixel}},
+		{engine_shader::post_process,			{"PostProcess.hlsl", "PostProcessPS", shader_types::pixel}},
+		{engine_shader::grid_frustums_cs,       {"GridFrustums.hlsl", "ComputeGridFrustumsCS", shader_types::compute}},
 	};
 
 	static_assert(_countof(engine_shader_files) == engine_shader::count);
@@ -308,6 +309,14 @@ bool compile_shaders()
 		full_path += file.info.file_name;
 		if (!std::filesystem::exists(full_path)) return false;
 		utl::vector<std::wstring> extra_args{};
+
+		if (file.id == engine_shader::grid_frustums_cs)
+		{
+			// TODO: get TILE_SIZE value from d3d12
+			extra_args.emplace_back(L"-D");
+			extra_args.emplace_back(L"TILE_SIZE=16");
+		}
+
 
 		dxc_compiled_shader compiled_shader{ compiler.compile(file.info, full_path, extra_args) };
 		if (compiled_shader.byte_code && compiled_shader.byte_code->GetBufferPointer() && compiled_shader.byte_code->GetBufferSize())
