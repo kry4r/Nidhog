@@ -144,8 +144,8 @@ namespace nidhog::graphics::d3d12::delight
 			// NOTE: cull_lights() will apply this transition.
 			// TODO: remove pixel_shader_resource flag (it's only there so we can visualize grid frustums).
 			barriers.add(culler.frustums.buffer(),
-				D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-				D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+						 D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+						 D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		}
 
 
@@ -208,5 +208,13 @@ namespace nidhog::graphics::d3d12::delight
 
 		//barriers.apply(cmd_list);
 	}
+
+	// TODO: temporary for visualizing light culling. Remove later.
+	D3D12_GPU_VIRTUAL_ADDRESS frustums(id::id_type light_culling_id, u32 frame_index)
+	{
+		assert(frame_index < frame_buffer_count && id::is_valid(light_culling_id));
+		return light_cullers[light_culling_id].cullers[frame_index].frustums.gpu_address();
+	}
+
 
 }

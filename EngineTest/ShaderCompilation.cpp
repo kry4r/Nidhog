@@ -21,7 +21,7 @@ using namespace Microsoft::WRL;
 using namespace nidhog::graphics::d3d12::shaders;
 namespace
 {
-	constexpr const char* shaders_source_path{ "../../../Engine/Graphics/Direct3D12/Shaders/" };
+	constexpr const char* shaders_source_path{ "D:/Nidhog/Engine/Graphics/Direct3D12/Shaders/" };
 
 
 	struct engine_shader_info

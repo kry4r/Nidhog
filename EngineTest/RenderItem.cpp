@@ -53,7 +53,7 @@ namespace {
         info.function = "TestShaderVS";
         info.type = shader_types::vertex;
 
-        const char* shader_path{ "D:\\Nidhog\\EngineTest\\" };
+        const char* shader_path{ "..\\..\\enginetest\\" };
 
         std::wstring defines[]{ L"ELEMENTS_TYPE=1", L"ELEMENTS_TYPE=3" };
         utl::vector<u32> keys;
@@ -121,12 +121,12 @@ void create_render_items()
     // NOTE: you can get these models if you're a patreon supporter of Primal Engine.
     //       Use the editor to import the scene and put the 3 models in this location.
     //       You can replace them with any model that's available to you.
-    assert(std::filesystem::exists("..\\..\\..\\x64\\lab_model.model"));
-    assert(std::filesystem::exists("..\\..\\..\\x64\\fan_model.model"));
-    assert(std::filesystem::exists("..\\..\\..\\x64\\int_model.model"));
-    auto _1 = std::thread{ [] { lab_model_id = load_model("..\\..\\..\\x64\\lab_model.model"); } };
-    auto _2 = std::thread{ [] { fan_model_id = load_model("..\\..\\..\\x64\\fan_model.model"); } };
-    auto _3 = std::thread{ [] { int_model_id = load_model("..\\..\\..\\x64\\int_model.model"); } };
+    assert(std::filesystem::exists("..\\..\\x64\\lab_model.model"));
+    assert(std::filesystem::exists("..\\..\\x64\\fan_model.model"));
+    assert(std::filesystem::exists("..\\..\\x64\\int_model.model"));
+    auto _1 = std::thread{ [] { lab_model_id = load_model("..\\..\\x64\\lab_model.model"); } };
+    auto _2 = std::thread{ [] { fan_model_id = load_model("..\\..\\x64\\fan_model.model"); } };
+    auto _3 = std::thread{ [] { int_model_id = load_model("..\\..\\x64\\int_model.model"); } };
     auto _4 = std::thread{ [] { load_shaders(); } };
 
     lab_entity_id = create_one_game_entity({}, {}, nullptr).get_id();

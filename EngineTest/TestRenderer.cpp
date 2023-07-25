@@ -265,7 +265,7 @@ bool test_initialize()
     // load test model
     std::unique_ptr<u8[]> model;
     u64 size{ 0 };
-    if (!read_file("..\\..\\..\\EngineTest\\model.model", model, size)) return false;
+    if (!read_file("D:\\Nidhog\\EngineTest\\model.model", model, size)) return false;
 
     model_id = content::create_resource(model.get(), content::asset_type::mesh);
     if (!id::is_valid(model_id)) return false;
