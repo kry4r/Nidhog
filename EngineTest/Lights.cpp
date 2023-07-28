@@ -113,8 +113,10 @@ void generate_lights()
 #else
     srand(37);
 
-    constexpr math::v3 scale{ 1.f, 0.5f, 1.f };
-    constexpr s32 dim{ 5 };
+    
+    constexpr f32 scale1{ 2 };
+    constexpr math::v3 scale{ 1.f * scale1, 0.5f * scale1, 1.f * scale1 };
+    constexpr s32 dim{ 13 };
     for (s32 x{ -dim }; x < dim; ++x)
         for (s32 y{ 0 }; y < 2 * dim; ++y)
             for (s32 z{ -dim }; z < dim; ++z)

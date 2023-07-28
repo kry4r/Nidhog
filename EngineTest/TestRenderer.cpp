@@ -140,7 +140,7 @@ LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         }
     }
 
-    if ((resized && GetAsyncKeyState(VK_LBUTTON) >= 0) || toggle_fullscreen)
+    if ((resized && GetKeyState(VK_LBUTTON) >= 0) || toggle_fullscreen)
     {
         platform::window win{ platform::window_id{(id::id_type)GetWindowLongPtr(hwnd, GWLP_USERDATA)} };
         for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
@@ -263,13 +263,14 @@ bool test_initialize()
 
     
     // load test model
+    /*
     std::unique_ptr<u8[]> model;
     u64 size{ 0 };
-    if (!read_file("D:\\Nidhog\\EngineTest\\model.model", model, size)) return false;
+    if (!read_file("..\\..\\EngineTest\\model.model", model, size)) return false;
 
     model_id = content::create_resource(model.get(), content::asset_type::mesh);
     if (!id::is_valid(model_id)) return false;
-
+    */
     init_test_workers(buffer_test_worker);
 
     create_render_items();

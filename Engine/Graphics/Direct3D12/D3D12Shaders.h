@@ -12,6 +12,7 @@ namespace nidhog::graphics::d3d12::shaders
             fill_color_ps = 1,
             post_process = 2,
             grid_frustums_cs = 3,
+            light_culling_cs = 4,
 
             count
         };
