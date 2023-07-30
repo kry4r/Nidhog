@@ -2,6 +2,8 @@
 #error Do not include this header directly in shader files. Only include this file via Common.hlsli.
 #endif
 
+#define USE_BOUNDING_SPHERES 1
+
 struct GlobalShaderData
 {
     float4x4        View;
@@ -47,6 +49,15 @@ struct Plane
     float Distance;
 };
 
+#if USE_BOUNDING_SPHERES
+// Frustum cone in view space
+struct Frustum
+{
+    float3 ConeDirection;
+    float UnitRadius;
+};
+
+#else
 // View frustum planes (in view space)
 // Plane order: left, right, top, bottom
 // Front and back planes are computed in light culling compute shader.
@@ -54,6 +65,7 @@ struct Frustum
 {
     Plane Planes[4];
 };
+#endif
 
 #ifndef __cplusplus
 struct ComputeShaderInput
@@ -93,10 +105,15 @@ struct LightCullingLightInfo
     float Range;
 
     float3 Direction;
+#if USE_BOUNDING_SPHERES
+    // If this is set to -1 then the light is a point light.
+    float CosPenumbra;
+#else
     float ConeRadius;
 
     uint Type;
     float3 _pad;
+#endif
 };
 
 // Contains light data that's formatted and ready to be copied
@@ -107,16 +124,19 @@ struct LightParameters
     float Intensity;
 
     float3 Direction;
-    uint Type;
 
-    float3 Color;
     float Range;
 
-    float3 Attenuation;
+    float3 Color;
     float CosUmbra; // Cosine of the hald angle of umbra
 
+    float3 Attenuation;
     float CosPenumbra; // Cosine of the hald angle of penumbra
-    float3 _pad;
+#if !USE_BOUNDING_SPHERES
+    uint    Type;
+    float3  _pad;
+#endif
+
 };
 
 
