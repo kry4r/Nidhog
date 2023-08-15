@@ -21,6 +21,8 @@ namespace nidhog::graphics::d3d12
 		pi.surface.height = core::surface_height;
 		pi.surface.render = core::render_surface;
 		//light
+		pi.light.create_light_set = light::create_light_set;
+		pi.light.remove_light_set = light::remove_light_set;
 		pi.light.create = light::create;
 		pi.light.remove = light::remove;
 		pi.light.set_parameter = light::set_parameter;

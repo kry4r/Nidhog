@@ -26,6 +26,8 @@ namespace nidhog::graphics
 
 		struct 
 		{
+			void(*create_light_set)(u64);
+			void(*remove_light_set)(u64);
 			light(*create)(light_init_info);
 			void(*remove)(light_id, u64);
 			void(*set_parameter)(light_id, u64, light_parameter::parameter, const void* const, u32);

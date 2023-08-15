@@ -93,6 +93,15 @@ namespace nidhog::graphics
 
 	/////////////////////////////////////////////////////////////////////////////////////   Light   //////////////////////////////////////////////////////////////////////////////////////////////
 
+	void create_light_set(u64 light_set_key)
+	{
+		gfx.light.create_light_set(light_set_key);
+	}
+	void remove_light_set(u64 light_set_key)
+	{
+		gfx.light.remove_light_set(light_set_key);
+	}
+
 	light create_light(light_init_info info)
 	{
 		return gfx.light.create(info);
