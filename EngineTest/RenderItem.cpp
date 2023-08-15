@@ -118,9 +118,6 @@ namespace {
 
 void create_render_items()
 {
-    // NOTE: you can get these models if you're a patreon supporter of Primal Engine.
-    //       Use the editor to import the scene and put the 3 models in this location.
-    //       You can replace them with any model that's available to you.
     assert(std::filesystem::exists("..\\..\\x64\\lab_model.model"));
     assert(std::filesystem::exists("..\\..\\x64\\fan_model.model"));
     assert(std::filesystem::exists("..\\..\\x64\\int_model.model"));

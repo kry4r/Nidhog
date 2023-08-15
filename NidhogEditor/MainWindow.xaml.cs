@@ -42,7 +42,7 @@ namespace NidhogEditor
                 if (dlg.ShowDialog() == true)
                 {
                     NidhogPath = dlg.NidhogPath;
-                    Environment.SetEnvironmentVariable("PRIMAL_ENGINE", NidhogPath.ToUpper(), EnvironmentVariableTarget.User);
+                    Environment.SetEnvironmentVariable("NIDHOG_ENGINE", NidhogPath.ToUpper(), EnvironmentVariableTarget.User);
                 }
                 else
                 {

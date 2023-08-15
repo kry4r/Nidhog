@@ -30,7 +30,7 @@ namespace NidhogEditor.GameProject
         [DataMember]
         public string Path { get; private set; }
         /// <summary>
-        /// Gets the full path of the current Primal project file, including its file name and extension.
+        /// Gets the full path of the current Nidhog project file, including its file name and extension.
         /// </summary>
 
         public string FullPath => $@"{Path}{Name}{Extension}";

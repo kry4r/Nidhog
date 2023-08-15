@@ -52,7 +52,7 @@ namespace NidhogEditor.Content
                 if (!string.IsNullOrEmpty(projectPath))
                 {
                     Debug.Assert(Directory.Exists(projectPath));
-                    _cacheFilePath = $@"{projectPath}.Primal\ContentInfoCache.bin";
+                    _cacheFilePath = $@"{projectPath}.Nidhog\ContentInfoCache.bin";
                     LoadInfoCache();
                 }
             }
