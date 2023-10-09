@@ -6,7 +6,7 @@ namespace nidhog::graphics::d3d12
 	//////////////////////////// DESCRIPTOR HEAP begin //////////////////////////////////
 	bool descriptor_heap::initialize(u32 capacity, bool is_shader_visible)
 	{
-		//一般在我们创建与加载纹理时使用，可能在不同的threat下发生
+		//一般在我们创建与加载纹理时使用，可能在不同的thread下发生
 		//于是使用mutex
         std::lock_guard lock{ _mutex };
         //检查heap大小是否过大

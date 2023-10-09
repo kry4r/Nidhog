@@ -45,6 +45,11 @@ namespace NidhogEditor.Utilities
             Debug.Assert((alignment & mask) == 0, "Alignment should be a power of 2.");
             return (size & ~mask);
         }
+
+        public static bool IsPow2(int x)
+        {
+            return (x != 0) && (x & (x - 1)) == 0;
+        }
     }
     public class DelayEventTimerArgs : EventArgs
     {
@@ -63,7 +68,7 @@ namespace NidhogEditor.Utilities
     {
         private readonly DispatcherTimer _timer;
         private readonly TimeSpan _delay;
-        private readonly List<object> _data = new List<object>();
+        private readonly List<object> _data = new();
         private DateTime _lastEventTime = DateTime.Now;
 
         public event EventHandler<DelayEventTimerArgs> Triggered;

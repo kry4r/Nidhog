@@ -28,7 +28,7 @@ namespace NidhogEditor.Content
     /// </summary>
     public partial class PrimitiveMeshDialog : Window
     {
-        private static readonly List<ImageBrush> _textures = new List<ImageBrush>();
+        private static readonly List<ImageBrush> _textures = new();
 
         private void OnPrimitiveType_ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdatePrimitive();
 
@@ -84,7 +84,7 @@ namespace NidhogEditor.Content
             }
 
             var geometry = new Geometry();
-            geometry.ImportSettings.SmootingAngle = smoothingAngle;
+            geometry.ImportSettings.SmoothingAngle = smoothingAngle;
             ContentToolsAPI.CreatePrimitveMesh(geometry, info);
             (DataContext as GeometryEditor).SetAsset(geometry);
             OnTexture_CheckBox_Click(textureCheckBox, null);

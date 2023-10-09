@@ -167,18 +167,18 @@ namespace nidhog::graphics::d3d12::content {
             shader_flags::flags                                  _shader_flags;
         };
 
-        constexpr D3D_PRIMITIVE_TOPOLOGY get_d3d_primitive_topology(primitve_topology::type type)
+        constexpr D3D_PRIMITIVE_TOPOLOGY get_d3d_primitive_topology(primitive_topology::type type)
         {
             using namespace nidhog::content;
-            assert(type < primitve_topology::count);
+            assert(type < primitive_topology::count);
 
             switch (type)
             {
-            case primitve_topology::point_list:     return D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
-            case primitve_topology::line_list:      return D3D_PRIMITIVE_TOPOLOGY_LINELIST;
-            case primitve_topology::line_strip:     return D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
-            case primitve_topology::triangle_list:  return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-            case primitve_topology::triangle_strip: return D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+            case primitive_topology::point_list:     return D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+            case primitive_topology::line_list:      return D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+            case primitive_topology::line_strip:     return D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
+            case primitive_topology::triangle_list:  return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+            case primitive_topology::triangle_strip: return D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
             }
 
             return D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
@@ -480,7 +480,7 @@ namespace nidhog::graphics::d3d12::content {
 
 
 
-            view.primitive_topology = get_d3d_primitive_topology((primitve_topology::type)primitive_topology);
+            view.primitive_topology = get_d3d_primitive_topology((primitive_topology::type)primitive_topology);
             view.elements_type = elements_type;
 
             std::lock_guard lock{ submesh_mutex };

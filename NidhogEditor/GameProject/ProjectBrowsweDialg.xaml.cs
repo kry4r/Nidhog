@@ -20,7 +20,7 @@ namespace NidhogEditor.GameProject
     /// </summary>
     public partial class ProjectBrowsweDialg : Window
     {
-        private readonly CubicEase _easing = new CubicEase() { EasingMode = EasingMode.EaseInOut };
+        private readonly CubicEase _easing = new() { EasingMode = EasingMode.EaseInOut };
 
         public static bool GotoNewProjectTab { get; set; }
 

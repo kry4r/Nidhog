@@ -2,6 +2,8 @@
 #include "Content/ContentToEngine.h"
 #include "Utilities/IOStream.h"
 #include <DirectXTex.h>
+#include <dxgi1_6.h>
+
 
 using namespace DirectX;
 using namespace Microsoft::WRL;
@@ -28,9 +30,11 @@ namespace nidhog::tools
                 file_not_found,
             };
         };
-
-        struct texture_dimension {
-            enum dimension : u32 {
+        //Texture classification
+        struct texture_dimension 
+        {
+            enum dimension : u32 
+            {
                 texture_1d,
                 texture_2d,
                 texture_3d,
@@ -40,13 +44,12 @@ namespace nidhog::tools
 
         struct texture_import_settings
         {
-            char* sources;        // string of one or more file paths separated by semi-colons ';'
+            char* sources;          // string of one or more file paths separated by semi-colons ';'
             u32     source_count;   // number of file paths
             u32     dimension;
             u32     mip_levels;
-            u32     array_size;
             f32     alpha_threshold;
-            u32     prefer_bc7;
+            u32     prefer_bc7;     // if use BC7 to pack
             u32     output_format;
             u32     compress;
         };
@@ -65,9 +68,9 @@ namespace nidhog::tools
         struct texture_data
         {
             constexpr static u32    max_mips{ 14 }; // we support up to 8k textures.
-            u8* subresource_data;
+            u8*                     subresource_data;
             u32                     subresource_size;
-            u8* icon;
+            u8*                     icon;
             u32                     icon_size;
             texture_info            info;
             texture_import_settings import_settings;
@@ -82,43 +85,29 @@ namespace nidhog::tools
         std::mutex                  device_creation_mutex;
         utl::vector<d3d11_device>   d3d11_devices;
 
-        bool
-            get_dxgi_factory(IDXGIFactory1** factory)
+        utl::vector<ComPtr<IDXGIAdapter>> get_adapters_by_performance()
         {
-            if (!factory) return false;
-
-            *factory = nullptr;
-
+            
             using PFN_CreateDXGIFactory1 = HRESULT(WINAPI*)(REFIID, void**);
             static PFN_CreateDXGIFactory1 create_dxgi_factory1{nullptr};
             if (!create_dxgi_factory1)
             {
                 HMODULE dxgi_module{ LoadLibrary(L"dxgi.dll") };
-                if (!dxgi_module) return false;
+                if (!dxgi_module) return {};
 
                 create_dxgi_factory1 = (PFN_CreateDXGIFactory1)((void*)GetProcAddress(dxgi_module, "CreateDXGIFactory1"));
-                if (!create_dxgi_factory1) return false;
+                if (!create_dxgi_factory1) return {};
             }
 
-            return SUCCEEDED(create_dxgi_factory1(IID_PPV_ARGS(factory)));
-        }
+            ComPtr<IDXGIFactory7>               factory;
+            utl::vector<ComPtr<IDXGIAdapter>>   adapters;
 
-        void
-            create_device()
-        {
-            if (d3d11_devices.size()) return;
-
-            utl::vector<ComPtr<IDXGIAdapter>> adapters;
-            ComPtr<IDXGIFactory1> factory;
-            if (get_dxgi_factory(factory.GetAddressOf()))
+            if (SUCCEEDED(create_dxgi_factory1(IID_PPV_ARGS(factory.GetAddressOf()))))
             {
-                constexpr u32 amd_id{ 0x1002 };
-                constexpr u32 nvidia_id{ 0x10de };
-                [[maybe_unused]] constexpr u32 intel_id{ 0x8086 };
                 constexpr u32 warp_id{ 0x1414 };
 
                 ComPtr<IDXGIAdapter> adapter;
-                for (u32 i{ 0 }; factory->EnumAdapters(i, adapter.GetAddressOf()) != DXGI_ERROR_NOT_FOUND; ++i)
+                for (u32 i{ 0 }; factory->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&adapter)) != DXGI_ERROR_NOT_FOUND; ++i)
                 {
                     if (!adapter) continue;
 
@@ -126,17 +115,21 @@ namespace nidhog::tools
                     adapter->GetDesc(&desc);
 
                     if (desc.VendorId != warp_id) adapters.emplace_back(adapter);
-                    // Assume AMD and nVidia adapters are discrete and bubble them up when found.
-                    if ((desc.VendorId == amd_id || desc.VendorId == nvidia_id) && adapters.size() > 1)
-                    {
-                        adapters.back().Swap(adapters.front());
-                    }
 
                     adapter.Reset();
                 }
             }
 
-            static PFN_D3D11_CREATE_DEVICE d3d11_create_device{nullptr};
+            return adapters;
+        }
+
+        void create_device()
+        {
+            if (d3d11_devices.size()) return;
+
+            utl::vector<ComPtr<IDXGIAdapter>> adapters{ get_adapters_by_performance() };
+
+            static PFN_D3D11_CREATE_DEVICE d3d11_create_device{ nullptr };
             if (!d3d11_create_device)
             {
                 HMODULE d3d11_module{ LoadLibrary(L"d3d11.dll") };
@@ -163,26 +156,25 @@ namespace nidhog::tools
                                                nullptr, create_device_flags, feature_levels, _countof(feature_levels),
                                                D3D11_SDK_VERSION, device, &feature_level, nullptr) };
                 assert(SUCCEEDED(hr));
-            }
+        }
 
             for (u32 i{ 0 }; i < devices.size(); ++i)
             {
+                // NOTE: we check for valid devices
                 if (devices[i])
                 {
                     d3d11_devices.emplace_back();
                     d3d11_devices.back().device = devices[i];
                 }
             }
-        }
+}
 
-        constexpr void
-            set_or_clear_flag(u32& flags, u32 flag, bool set)
+        constexpr void set_or_clear_flag(u32& flags, u32 flag, bool set)
         {
             if (set) flags |= flag; else flags &= ~flag;
         }
 
-        constexpr u32
-            get_max_mip_count(u32 width, u32 height, u32 depth)
+        constexpr u32 get_max_mip_count(u32 width, u32 height, u32 depth)
         {
             u32 mip_levels{ 1 };
             while (width > 1 || height > 1 || depth > 1)
@@ -197,8 +189,7 @@ namespace nidhog::tools
             return mip_levels;
         }
 
-        void
-            texture_info_from_metadata(const TexMetadata& metadata, texture_info& info)
+        void texture_info_from_metadata(const TexMetadata& metadata, texture_info& info)
         {
             using namespace nidhog::content;
             const DXGI_FORMAT format{ metadata.format };
@@ -214,8 +205,7 @@ namespace nidhog::tools
             set_or_clear_flag(info.flags, texture_flags::is_volume_map, metadata.IsVolumemap());
         }
 
-        void
-            copy_subresources(const ScratchImage& scratch, texture_data* const data)
+        void copy_subresources(const ScratchImage& scratch, texture_data* const data)
         {
             const TexMetadata& metadata{ scratch.GetMetadata() };
             const Image* const images{ scratch.GetImages() };
@@ -238,7 +228,7 @@ namespace nidhog::tools
             }
 
             data->subresource_size = (u32)subresource_size;
-            data->subresource_data = (u8* const)CoTaskMemRealloc(data->subresource_data, subresource_size);
+            data->subresource_data = (u8 *const)CoTaskMemRealloc(data->subresource_data, subresource_size);
             assert(data->subresource_data);
 
             utl::blob_stream_writer blob{data->subresource_data, data->subresource_size};
@@ -254,8 +244,7 @@ namespace nidhog::tools
             }
         }
 
-        [[nodiscard]] utl::vector<Image>
-            subresource_data_to_images(texture_data* const data)
+        [[nodiscard]] utl::vector<Image> subresource_data_to_images(texture_data* const data)
         {
             assert(data && data->subresource_data && data->subresource_size);
             assert(data->info.mip_levels && data->info.mip_levels <= texture_data::max_mips);
@@ -299,14 +288,17 @@ namespace nidhog::tools
             return images;
         }
 
-        void
-            copy_icon(const ScratchImage& scratch, texture_data* const data)
+        void copy_icon(const Image& bc_image, texture_data* const data)
         {
-            const Image* const images{ scratch.GetImages() };
-            const u32 image_count{ (u32)scratch.GetImageCount() };
-            assert(images && image_count);
+            ScratchImage scratch;
+            if (FAILED(Decompress(bc_image, DXGI_FORMAT_UNKNOWN, scratch)))
+            {
+                return;
+            }
 
-            const Image& image{ images[0] };
+            assert(scratch.GetImages());
+            const Image& image{ scratch.GetImages()[0] };
+
             // 4 x u32 for width, height, rowPitch and slicePitch
             data->icon_size = (u32)(sizeof(u32) * 4 + image.slicePitch);
             data->icon = (u8* const)CoTaskMemRealloc(data->icon, data->icon_size);
@@ -319,16 +311,14 @@ namespace nidhog::tools
             blob.write(image.pixels, image.slicePitch);
         }
 
-        [[nodiscard]] ScratchImage
-            load_from_file(texture_data* const data, const char* file_name)
+        [[nodiscard]] ScratchImage load_from_file(texture_data* const data, const char* file_name)
         {
             using namespace nidhog::content;
             assert(file_exists(file_name));
-            ScratchImage scratch;
             if (!file_exists(file_name))
             {
                 data->info.import_error = import_error::file_not_found;
-                return scratch;
+                return {};
             }
 
             data->info.import_error = import_error::load;
@@ -345,6 +335,8 @@ namespace nidhog::tools
 
             const std::wstring wfile{to_wstring(file_name)};
             const wchar_t* const file{ wfile.c_str() };
+
+            ScratchImage scratch;
 
             // Try one of WIC formats first (e.g. BMP, JPEG, PNG, etc.).
             wic_flags |= WIC_FLAGS_FORCE_RGB;
@@ -389,8 +381,7 @@ namespace nidhog::tools
             return scratch;
         }
 
-        [[nodiscard]] ScratchImage
-            initialize_from_images(texture_data* const data, const utl::vector<Image>& images)
+        [[nodiscard]] ScratchImage initialize_from_images(texture_data* const data, const utl::vector<Image>& images)
         {
             assert(data);
             const texture_import_settings& settings{ data->import_settings };
@@ -406,19 +397,12 @@ namespace nidhog::tools
                     settings.dimension == texture_dimension::texture_2d)
                 {
                     const bool allow_1d{ settings.dimension == texture_dimension::texture_1d };
-                    if (array_size > 1)
-                    {
-                        hr = working_scratch.InitializeArrayFromImages(images.data(), images.size(), allow_1d);
-                    }
-                    else
-                    {
-                        assert(array_size == 1 && images.size() == 1);
-                        hr = working_scratch.InitializeFromImage(images[0], allow_1d);
-                    }
+                    assert(array_size >= 1 && images.size() >= 1);
+                    hr = working_scratch.InitializeArrayFromImages(images.data(), images.size(), allow_1d);
                 }
                 else if (settings.dimension == texture_dimension::texture_cube)
                 {
-                    assert(array_size % 6 == 0);
+                    assert((array_size % 6) == 0);
                     hr = working_scratch.InitializeCubeFromImages(images.data(), images.size());
                 }
                 else
@@ -466,17 +450,16 @@ namespace nidhog::tools
 
         }
 
-        DXGI_FORMAT
-            determine_output_format(texture_data* const data, ScratchImage& scratch, const Image* const image)
+        DXGI_FORMAT determine_output_format(texture_data* const data, ScratchImage& scratch, const Image* const image)
         {
             assert(data && data->import_settings.compress);
             using namespace nidhog::content;
             const DXGI_FORMAT image_format{ image->format };
-            texture_import_settings& settings{ data->import_settings };
+            DXGI_FORMAT output_format{ (DXGI_FORMAT)data->import_settings.output_format };
 
             // Determine the best block compressed format if import settings
             // don't explicitly specify a format.
-            if (settings.output_format != DXGI_FORMAT_UNKNOWN)
+            if (output_format != DXGI_FORMAT_UNKNOWN)
             {
                 goto _done;
             }
@@ -484,19 +467,19 @@ namespace nidhog::tools
             if (data->info.flags & texture_flags::is_hdr ||
                 image_format == DXGI_FORMAT_BC6H_UF16 || image_format == DXGI_FORMAT_BC6H_SF16)
             {
-                settings.output_format = DXGI_FORMAT_BC6H_UF16;
+                output_format = DXGI_FORMAT_BC6H_UF16;
             }
             // If the source image is gray scale or a single channel block compressed format (BC4),
             // then output format will be BC4.
             else if (image_format == DXGI_FORMAT_R8_UNORM || image_format == DXGI_FORMAT_BC4_UNORM || image_format == DXGI_FORMAT_BC4_SNORM)
             {
-                settings.output_format = DXGI_FORMAT_BC4_UNORM;
+                output_format = DXGI_FORMAT_BC4_UNORM;
             }
             // Test if the source image is a normal map and if so, use BC5 format for the output.
             else if (is_normal_map(image) || image_format == DXGI_FORMAT_BC5_UNORM || image_format == DXGI_FORMAT_BC5_SNORM)
             {
                 data->info.flags |= texture_flags::is_imported_as_normal_map;
-                settings.output_format = DXGI_FORMAT_BC5_UNORM;
+                output_format = DXGI_FORMAT_BC4_UNORM;
 
                 if (IsSRGB(image_format))
                 {
@@ -506,20 +489,17 @@ namespace nidhog::tools
             // We exhausted all options. use an RGBA block compressed format.
             else
             {
-                settings.output_format = settings.prefer_bc7 ?
-                    DXGI_FORMAT_BC7_UNORM : DXGI_FORMAT_BC3_UNORM;
+                output_format = data->import_settings.prefer_bc7 ? DXGI_FORMAT_BC7_UNORM : scratch.IsAlphaAllOpaque() ? DXGI_FORMAT_BC1_UNORM : DXGI_FORMAT_BC3_UNORM;
             }
 
         _done:
-            assert(IsCompressed((DXGI_FORMAT)settings.output_format));
-            if (HasAlpha((DXGI_FORMAT)settings.output_format)) data->info.flags |= texture_flags::has_alpha;
+            assert(IsCompressed(output_format));
+            if (HasAlpha(output_format)) data->info.flags |= texture_flags::has_alpha;
 
-            return IsSRGB(image->format) ?
-                MakeSRGB((DXGI_FORMAT)settings.output_format) : (DXGI_FORMAT)settings.output_format;
+            return IsSRGB(image_format) ? MakeSRGB(output_format) : output_format;
         }
 
-        bool
-            can_use_gpu(DXGI_FORMAT format)
+        bool can_use_gpu(DXGI_FORMAT format)
         {
             switch (format)
             {
@@ -545,8 +525,7 @@ namespace nidhog::tools
             return false;
         }
 
-        [[nodiscard]] ScratchImage
-            compress_image(texture_data* const data, ScratchImage& scratch)
+        [[nodiscard]] ScratchImage compress_image(texture_data* const data, ScratchImage& scratch)
         {
             assert(data && data->import_settings.compress && scratch.GetImages());
 
@@ -595,14 +574,12 @@ namespace nidhog::tools
         }
     } // anonymous namespace
 
-    void
-        ShutDownTextureTools()
+    void ShutDownTextureTools()
     {
         d3d11_devices.clear();
     }
 
-    EDITOR_INTERFACE void
-        DecompressMipmaps(texture_data* const data)
+    EDITOR_INTERFACE void Decompress(texture_data* const data)
     {
         using namespace nidhog::content;
         assert(data->import_settings.compress);
@@ -639,8 +616,7 @@ namespace nidhog::tools
         }
     }
 
-    EDITOR_INTERFACE void
-        Import(texture_data* const data)
+    EDITOR_INTERFACE void Import(texture_data* const data)
     {
         const texture_import_settings& settings{ data->import_settings };
         assert(settings.sources && settings.source_count);
@@ -713,13 +689,14 @@ namespace nidhog::tools
 
         if (settings.compress)
         {
-            // NOTE: make a copy of the first uncompressed image for the editor to generate an icon from.
-            //       We only do this for compressed imports. If not compressed, the editor can pick the
-            //       first image from the returned subresources.
-            copy_icon(scratch, data);
+            
             ScratchImage bc_scratch{ compress_image(data, scratch) };
 
             if (data->info.import_error) return;
+
+            // Decompress the first image to be used for the icon.
+            assert(bc_scratch.GetImages());
+            copy_icon(bc_scratch.GetImages()[0], data);
 
             scratch = std::move(bc_scratch);
         }

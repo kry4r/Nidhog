@@ -165,7 +165,7 @@ namespace nidhog::graphics
         }
     };
 
-    struct primitve_topology 
+    struct primitive_topology 
     {
         enum type : u32 
         {

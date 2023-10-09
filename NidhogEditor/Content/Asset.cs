@@ -20,6 +20,12 @@ namespace NidhogEditor.Content
         Texture,
     }
 
+    interface IAssetImportSettings
+    {
+        void ToBinary(BinaryWriter writer);
+        void FromBinary(BinaryReader reader);
+    }
+
 
     sealed class AssetInfo
     {
@@ -27,7 +33,6 @@ namespace NidhogEditor.Content
         public byte[] Icon { get; set; }
         public string FullPath { get; set; }
         public string FileName => Path.GetFileNameWithoutExtension(FullPath);
-        public string SourcePath { get; set; }
 
         public DateTime RegisterTime { get; set; }
         public DateTime ImportDate { get; set; }
@@ -39,10 +44,9 @@ namespace NidhogEditor.Content
     abstract class Asset : ViewModelBase
     {
         public static string AssetFileExtension => ".asset";
-        public AssetType Type { get; private set; }
+        public AssetType Type { get;  }
 
         public byte[] Icon { get; protected set; }
-        public string SourcePath { get; protected set; }
 
         private string _fullPath;
         public string FullPath
@@ -64,8 +68,8 @@ namespace NidhogEditor.Content
         public Guid Guid { get; protected set; } = Guid.NewGuid();
         public DateTime ImportDate { get; protected set; }
         public byte[] Hash { get; protected set; }
-        public abstract void Import(string file);
-        public abstract void Load(string file);
+        public abstract bool Import(string file);
+        public abstract bool Load(string file);
         public abstract IEnumerable<string> Save(string file);
         public abstract byte[] PackForEngine();
 
@@ -84,7 +88,6 @@ namespace NidhogEditor.Content
             {
                 info.Hash = reader.ReadBytes(hashSize);
             }
-            info.SourcePath = reader.ReadString();
             var iconSize = reader.ReadInt32();
             info.Icon = reader.ReadBytes(iconSize);
 
@@ -130,7 +133,6 @@ namespace NidhogEditor.Content
                 writer.Write(0);
             }
 
-            writer.Write(SourcePath ?? "");
             writer.Write(Icon.Length);
             writer.Write(Icon);
         }
@@ -144,7 +146,6 @@ namespace NidhogEditor.Content
             Guid = info.Guid;
             ImportDate = info.ImportDate;
             Hash = info.Hash;
-            SourcePath = info.SourcePath;
             Icon = info.Icon;
         }
 
